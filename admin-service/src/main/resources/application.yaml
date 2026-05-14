@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: admin-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/connectsphere
+    username: root
+    password: vanshriya123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8090
+
+app:
+  auth-service:
+    base-url: http://localhost:8080/api/users/admin
+  post-service:
+    base-url: http://localhost:8080/api/v1/posts/admin
+  comment-service:
+    base-url: http://localhost:8080/api/v1/comments/admin
+  search-service:
+    base-url: http://localhost:8080/api/search
+  notification-service:
+    base-url: http://localhost:8080/api/v1/notifications/admin
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  base-dir: ${LOG_BASE_DIR:../logs}
+
