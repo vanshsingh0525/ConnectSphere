@@ -1,0 +1,6 @@
+<div class="more-menu" [style.top.px]="top" [style.left.px]="left">
+  <button type="button" class="admin-entry" *ngIf="showAdminOption" (click)="admin.emit()">Admin Console</button>
+  <div class="divider" *ngIf="showAdminOption"></div>
+  <button type="button" (click)="settings.emit()">Settings</button>
+  <button type="button" (click)="logout.emit()">Logout</button>
+</div>

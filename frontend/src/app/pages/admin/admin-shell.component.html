@@ -1,0 +1,40 @@
+<div class="admin-shell">
+  <aside class="admin-sidebar" [class.open]="sidebarOpen">
+    <div class="admin-brand">
+      <div class="brand-icon">AC</div>
+      <div>
+        <strong>Admin Console</strong>
+        <p>ConnectSphere Control Center</p>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.link"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="icon">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <button type="button" class="ghost-btn" (click)="backToApp()">Back to App</button>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button type="button" class="menu-btn" (click)="toggleSidebar()">MN</button>
+      <div>
+        <p class="eyebrow">Premium Admin Panel</p>
+        <h1>Welcome, {{ '@' + adminName }}</h1>
+      </div>
+      <div class="status-pill">LIVE CONTROL</div>
+    </header>
+
+    <section class="admin-content">
+      <router-outlet></router-outlet>
+    </section>
+  </div>
+</div>

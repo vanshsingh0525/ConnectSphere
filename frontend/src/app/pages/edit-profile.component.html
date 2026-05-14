@@ -1,0 +1,62 @@
+<div class="edit-profile-shell">
+  <app-sidebar
+    class="sidebar-host"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="edit-profile-main">
+    <section class="card">
+      <header class="card-header">
+        <h1>Edit Profile</h1>
+        <p>Manage your public profile details.</p>
+      </header>
+
+      <p class="status loading" *ngIf="loadingProfile">Loading your profile...</p>
+      <p class="status error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="form" novalidate>
+        <div class="avatar-row">
+          <img [src]="displayedAvatar" alt="Profile preview" appImageFallback />
+          <div class="avatar-actions">
+            <button type="button" (click)="openPhotoPicker()">Change Photo</button>
+            <p>JPG, PNG, WEBP supported.</p>
+          </div>
+          <input
+            #profileImageInput
+            type="file"
+            accept="image/*"
+            (change)="onPhotoSelected($event)"
+            class="hidden-input"
+          />
+        </div>
+
+        <label>
+          Username
+          <input type="text" formControlName="username" placeholder="username" />
+        </label>
+
+        <label>
+          Name
+          <input type="text" formControlName="name" placeholder="Full name" />
+        </label>
+
+        <label>
+          Bio
+          <textarea formControlName="bio" rows="4" placeholder="Tell people about you"></textarea>
+        </label>
+
+        <label>
+          Website (optional)
+          <input type="text" formControlName="website" placeholder="https://example.com" />
+        </label>
+
+        <div class="actions">
+          <button type="button" class="secondary" (click)="cancel()">Cancel</button>
+          <button type="submit" [disabled]="saving || loadingProfile">{{ saving ? 'Saving...' : 'Save' }}</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>

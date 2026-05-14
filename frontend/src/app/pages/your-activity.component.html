@@ -1,0 +1,195 @@
+<div class="activity-shell">
+  <app-sidebar
+    class="sidebar-host"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="activity-main">
+    <section class="activity-card">
+      <header class="activity-header">
+        <div>
+          <p class="eyebrow">Settings</p>
+          <h1>Your Activity</h1>
+          <p>Manage your likes, comments, archived stories, and recently deleted stories.</p>
+        </div>
+        <button type="button" class="ghost-btn" (click)="goToSettings()">Back to Settings</button>
+      </header>
+
+      <div class="toolbar-row">
+        <div class="tabs" role="tablist" aria-label="Your Activity Tabs">
+          <button type="button" [class.active]="activeTab === 'likes'" (click)="setTab('likes')">
+            Likes ({{ filteredLikes.length }})
+          </button>
+          <button type="button" [class.active]="activeTab === 'comments'" (click)="setTab('comments')">
+            Comments ({{ filteredComments.length }})
+          </button>
+          <button type="button" [class.active]="activeTab === 'archived'" (click)="setTab('archived')">
+            Archived Stories ({{ filteredArchivedStories.length }})
+          </button>
+          <button type="button" [class.active]="activeTab === 'deleted'" (click)="setTab('deleted')">
+            Recently Deleted Stories ({{ filteredDeletedStories.length }})
+          </button>
+        </div>
+
+        <label class="filter-box">
+          <span>Filter</span>
+          <select [value]="filterWindow" (change)="setFilterWindow($any($event.target).value)">
+            <option value="all">All time</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
+        </label>
+      </div>
+
+      <p class="status error" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <p class="status" *ngIf="loading">Loading activity...</p>
+
+      <section class="tab-panel" *ngIf="activeTab === 'likes'">
+        <div class="likes-head" *ngIf="filteredLikes.length > 0">
+          <h3>Newest to oldest</h3>
+          <span>{{ filteredLikes.length }} posts</span>
+        </div>
+
+        <section class="likes-grid" *ngIf="!loading && filteredLikes.length > 0">
+          <article class="liked-grid-item" *ngFor="let item of filteredLikes" (click)="openPost(item.post.id)">
+            <img
+              *ngIf="postMediaType(item.post) === 'image'"
+              [src]="item.post.mediaUrl"
+              [alt]="item.post.text || ('Liked post ' + item.post.id)"
+            />
+            <video
+              *ngIf="postMediaType(item.post) === 'video'"
+              [src]="item.post.mediaUrl ?? ''"
+              muted
+              preload="metadata"
+            ></video>
+            <div *ngIf="postMediaType(item.post) === 'none'" class="liked-grid-text">
+              <p>{{ item.post.text || 'Open post' }}</p>
+            </div>
+
+            <span class="media-chip" *ngIf="postMediaType(item.post) === 'video'">Video</span>
+
+            <div class="liked-grid-overlay">
+              <div class="liked-grid-meta">
+                <strong>{{ item.post.likesCount }} likes</strong>
+                <span>{{ item.post.commentsCount }} comments</span>
+              </div>
+              <div class="liked-grid-actions">
+                <button type="button" (click)="openPost(item.post.id); $event.stopPropagation()">Open</button>
+                <button type="button" class="danger" (click)="unlikePost(item); $event.stopPropagation()">Unlike</button>
+              </div>
+              <p class="liked-grid-date">Liked on {{ item.reaction.reactedAt | date:'medium' }}</p>
+            </div>
+          </article>
+        </section>
+
+        <p class="empty" *ngIf="!loading && filteredLikes.length === 0">No liked posts found.</p>
+      </section>
+
+      <section class="tab-panel" *ngIf="activeTab === 'comments'">
+        <article class="activity-item" *ngFor="let item of filteredComments | slice:0:visibleCommentsCount">
+          <div class="comment-body">
+            <ng-container *ngIf="editingCommentId !== item.id; else editCommentForm">
+              <p class="item-title">{{ item.content }}</p>
+            </ng-container>
+            <ng-template #editCommentForm>
+              <textarea rows="3" [(ngModel)]="editingCommentText"></textarea>
+            </ng-template>
+            <p class="item-meta">Post #{{ item.postId }} • {{ item.createdAt | date:'medium' }}</p>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="openPost(item.postId)">Open Post</button>
+            <button type="button" *ngIf="editingCommentId !== item.id" (click)="beginEditComment(item)">Edit</button>
+            <button type="button" *ngIf="editingCommentId === item.id" (click)="saveEditedComment(item)">Save</button>
+            <button type="button" *ngIf="editingCommentId === item.id" (click)="cancelEditComment()">Cancel</button>
+            <button type="button" class="danger" (click)="deleteComment(item)">Delete</button>
+          </div>
+        </article>
+
+        <p class="empty" *ngIf="!loading && filteredComments.length === 0">No comments found.</p>
+        <button class="load-more" type="button" *ngIf="visibleCommentsCount < filteredComments.length" (click)="loadMoreComments()">
+          Load more comments
+        </button>
+      </section>
+
+      <section class="tab-panel" *ngIf="activeTab === 'archived'">
+        <article class="activity-item story-activity-item" *ngFor="let story of filteredArchivedStories">
+          <div class="story-activity-body">
+            <button type="button" class="story-preview" (click)="openStoryMedia(story)">
+              <img
+                *ngIf="storyMediaType(story) === 'image'"
+                [src]="story.mediaUrl"
+                [alt]="storyPreviewLabel(story)"
+              />
+              <video
+                *ngIf="storyMediaType(story) === 'video'"
+                [src]="story.mediaUrl"
+                muted
+                preload="metadata"
+              ></video>
+              <div class="story-preview-empty" *ngIf="storyMediaType(story) === 'none'">
+                <span>Story preview unavailable</span>
+              </div>
+              <span class="story-preview-chip" *ngIf="storyMediaType(story) === 'video'">Video</span>
+            </button>
+
+            <div class="story-activity-copy">
+              <p class="item-title">{{ story.caption || 'Story archived after 24 hours' }}</p>
+              <p class="item-meta">Archived on {{ story.archivedAt | date:'medium' }}</p>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="openStoryMedia(story)">Open Story</button>
+          </div>
+        </article>
+
+        <p class="empty" *ngIf="!loading && filteredArchivedStories.length === 0">No archived stories found.</p>
+      </section>
+
+      <section class="tab-panel" *ngIf="activeTab === 'deleted'">
+        <article class="activity-item story-activity-item" *ngFor="let story of filteredDeletedStories">
+          <div class="story-activity-body">
+            <button type="button" class="story-preview" (click)="openStoryMedia(story)">
+              <img
+                *ngIf="storyMediaType(story) === 'image'"
+                [src]="story.mediaUrl"
+                [alt]="storyPreviewLabel(story)"
+              />
+              <video
+                *ngIf="storyMediaType(story) === 'video'"
+                [src]="story.mediaUrl"
+                muted
+                preload="metadata"
+              ></video>
+              <div class="story-preview-empty" *ngIf="storyMediaType(story) === 'none'">
+                <span>Story preview unavailable</span>
+              </div>
+              <span class="story-preview-chip" *ngIf="storyMediaType(story) === 'video'">Video</span>
+            </button>
+
+            <div class="story-activity-copy">
+              <p class="item-title">{{ storyPreviewLabel(story) }}</p>
+              <p class="item-meta">Deleted on {{ story.deletedAt | date:'medium' }}</p>
+              <p class="story-id-text">Story ID: {{ story.storyId }}</p>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="openStoryMedia(story)">Open Story</button>
+            <button type="button" (click)="restoreStory(story)">Restore</button>
+            <button type="button" class="danger" (click)="permanentlyDeleteStory(story)">Delete Permanently</button>
+          </div>
+        </article>
+
+        <p class="empty" *ngIf="!loading && filteredDeletedStories.length === 0">No recently deleted stories found.</p>
+      </section>
+    </section>
+  </main>
+</div>
+
+<app-story-viewer
+  [isOpen]="activityStoryViewerOpen"
+  [storyGroups]="activityStoryGroups"
+  [startUserId]="activityStoryStartUserId"
+  (closed)="onCloseActivityStoryViewer()"
+></app-story-viewer>

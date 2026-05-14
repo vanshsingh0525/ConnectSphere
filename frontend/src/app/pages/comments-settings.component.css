@@ -1,0 +1,150 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.settings-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(253, 188, 90, 0.17), transparent 34%),
+    radial-gradient(circle at right bottom, rgba(75, 131, 255, 0.15), transparent 38%),
+    #f7f9ff;
+}
+
+.sidebar-host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 20;
+}
+
+.settings-main {
+  margin-left: 90px;
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.panel {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  border-radius: 28px;
+  border: 1px solid #e2eafb;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 60px rgba(24, 39, 84, 0.11);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: #dd6b2d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.panel-header h1 {
+  margin: 0;
+  color: #1d315f;
+}
+
+.panel-header p:last-child {
+  margin: 0.45rem 0 0;
+  color: #6078a8;
+}
+
+.ghost-btn,
+.toggle-btn {
+  border: 0;
+  border-radius: 999px;
+  min-height: 42px;
+  padding: 0 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ghost-btn {
+  border: 1px solid #dce7fe;
+  background: #f5f8ff;
+  color: #365fcf;
+}
+
+.status {
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  font-weight: 600;
+}
+
+.loading {
+  background: #edf3ff;
+  color: #36508f;
+}
+
+.error {
+  background: #ffe8ec;
+  color: #8f1e2d;
+}
+
+.success {
+  background: #e7f7ee;
+  color: #1d6a3a;
+}
+
+.setting-card {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #e5ecfd;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #fff 0%, #f7faff 100%);
+  padding: 1rem;
+}
+
+.setting-card strong {
+  color: #233a68;
+  font-size: 1.05rem;
+}
+
+.setting-card p {
+  margin: 0.35rem 0 0;
+  color: #6178a8;
+  max-width: 42ch;
+}
+
+.toggle-btn {
+  background: linear-gradient(125deg, #3260db, #4d79ff);
+  color: #fff;
+}
+
+.toggle-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@media (max-width: 900px) {
+  .sidebar-host {
+    position: static;
+    height: auto;
+  }
+
+  .settings-main {
+    margin-left: 0;
+  }
+
+  .panel-header,
+  .setting-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

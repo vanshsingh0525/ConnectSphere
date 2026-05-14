@@ -1,0 +1,50 @@
+<section class="profile-header-card">
+  <div class="avatar-wrap">
+    <button
+      type="button"
+      class="ring avatar-button"
+      [class.is-clickable]="hasActiveStory"
+      [attr.aria-label]="hasActiveStory ? ('View ' + profile.username + ' story') : null"
+      [disabled]="!hasActiveStory"
+      (click)="viewStory.emit()"
+    >
+      <img [src]="profile.avatarUrl" [alt]="profile.username + ' avatar'" appImageFallback />
+    </button>
+    <button
+      type="button"
+      class="add-btn"
+      *ngIf="isOwnProfile"
+      aria-label="Add story"
+      (click)="addStory.emit()"
+    >
+      +
+    </button>
+  </div>
+
+  <div class="profile-details">
+    <div class="top-row">
+      <h1>
+        {{ profile.username }}
+        <app-verified-badge [show]="!!profile.verified"></app-verified-badge>
+        <span *ngIf="!profile.isPublic" class="private-badge">Private</span>
+      </h1>
+      <div class="actions">
+        <button type="button" *ngIf="isOwnProfile" (click)="editProfile.emit()">Edit profile</button>
+        <button type="button" *ngIf="!isOwnProfile" [disabled]="followBusy" (click)="toggleFollow.emit()">
+          {{ followBusy ? 'Please wait...' : (isFollowing ? 'Following' : (isPending ? 'Requested' : 'Follow')) }}
+        </button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <button type="button" class="stat-btn" (click)="openPosts.emit()"><strong>{{ profile.postsLabel }}</strong> posts</button>
+      <button type="button" class="stat-btn" (click)="openFollowers.emit()"><strong>{{ profile.followersLabel }}</strong> followers</button>
+      <button type="button" class="stat-btn" (click)="openFollowing.emit()"><strong>{{ profile.followingLabel }}</strong> following</button>
+    </div>
+
+    <div class="bio">
+      <p class="name">{{ profile.name }}</p>
+      <p>{{ profile.bio }}</p>
+    </div>
+  </div>
+</section>

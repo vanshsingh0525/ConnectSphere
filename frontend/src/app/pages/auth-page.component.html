@@ -1,0 +1,201 @@
+<main class="auth-page">
+  <div class="success-toast" *ngIf="showSuccessToast" role="status" aria-live="polite">
+    <span class="toast-icon" aria-hidden="true">✓</span>
+    <span>{{ successToastMessage }}</span>
+  </div>
+
+  <section class="auth-card" aria-label="Authentication card">
+    <header class="logo-wrap">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 11C9.433 11 11 9.433 11 7.5C11 5.567 9.433 4 7.5 4C5.567 4 4 5.567 4 7.5C4 9.433 5.567 11 7.5 11Z" fill="currentColor"/>
+          <path d="M16.5 11C18.433 11 20 9.433 20 7.5C20 5.567 18.433 4 16.5 4C14.567 4 13 5.567 13 7.5C13 9.433 14.567 11 16.5 11Z" fill="currentColor"/>
+          <path d="M7.5 13C4.462 13 2 15.462 2 18.5V19C2 19.552 2.448 20 3 20H12C12.552 20 13 19.552 13 19V18.5C13 15.462 10.538 13 7.5 13Z" fill="currentColor"/>
+          <path d="M16.5 13C13.462 13 11 15.462 11 18.5V19C11 19.552 11.448 20 12 20H21C21.552 20 22 19.552 22 19V18.5C22 15.462 19.538 13 16.5 13Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1>{{ title }}</h1>
+      <p class="tagline">Connect, share, and grow your network.</p>
+    </header>
+
+    <form *ngIf="isLoginMode" (ngSubmit)="submitLogin()" class="auth-form" autocomplete="on" [formGroup]="loginForm">
+      <h2>Welcome back</h2>
+      <p class="form-subtitle">Sign in to continue to your account.</p>
+
+      <p *ngIf="errorMessage" class="form-message error">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="form-message success">{{ successMessage }}</p>
+
+      <label class="field" for="login-email" [class.invalid]="loginForm.controls.email.invalid && (loginForm.controls.email.dirty || loginForm.controls.email.touched)">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6H20C21.105 6 22 6.895 22 8V16C22 17.105 21.105 18 20 18H4C2.895 18 2 17.105 2 16V8C2 6.895 2.895 6 4 6Z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 8L12 14L21 8" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="login-email"
+          type="email"
+          formControlName="email"
+          placeholder="Email address"
+          required
+        />
+      </label>
+
+      <label class="field" for="login-password" [class.invalid]="loginForm.controls.password.invalid && (loginForm.controls.password.dirty || loginForm.controls.password.touched)">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 10V8C8 5.791 9.791 4 12 4C14.209 4 16 5.791 16 8V10" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="login-password"
+          type="password"
+          formControlName="password"
+          placeholder="Password"
+          required
+        />
+      </label>
+
+      <button type="submit" class="auth-btn" [disabled]="loading || loginForm.invalid">
+        <span *ngIf="loading" class="btn-spinner" aria-hidden="true"></span>
+        {{ loading ? 'Logging in...' : 'Log In' }}
+      </button>
+      <button type="button" class="google-btn" (click)="loginWithGoogle()">
+        <span class="google-icon" aria-hidden="true">G</span>
+        <span>Continue with Google</span>
+      </button>
+      <p class="toggle-text">
+        New to ConnectSphere?
+        <button type="button" class="toggle-link" (click)="toggleMode()">Create account</button>
+      </p>
+    </form>
+
+    <form *ngIf="!isLoginMode" (ngSubmit)="submitRegister()" class="auth-form register-form" autocomplete="off" [formGroup]="registerForm">
+      <h2>Create account</h2>
+
+      <p *ngIf="errorMessage" class="form-message error">{{ errorMessage }}</p>
+      <p *ngIf="successMessage" class="form-message success">{{ successMessage }}</p>
+
+      <label class="field floating-field" for="register-first-name" [class.invalid]="!!getRegisterError('firstName')">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="register-first-name"
+          type="text"
+          formControlName="firstName"
+          required
+          autocomplete="off"
+          placeholder=" "
+        />
+        <span class="floating-label">First Name</span>
+      </label>
+      <p *ngIf="getRegisterError('firstName')" class="field-error">{{ getRegisterError('firstName') }}</p>
+
+      <label class="field floating-field" for="register-last-name" [class.invalid]="!!getRegisterError('lastName')">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="register-last-name"
+          type="text"
+          formControlName="lastName"
+          required
+          autocomplete="off"
+          placeholder=" "
+        />
+        <span class="floating-label">Last Name</span>
+      </label>
+      <p *ngIf="getRegisterError('lastName')" class="field-error">{{ getRegisterError('lastName') }}</p>
+
+      <label class="field floating-field" for="register-username" [class.invalid]="!!getRegisterError('username')">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="register-username"
+          type="text"
+          formControlName="username"
+          required
+          autocomplete="off"
+          placeholder=" "
+        />
+        <span class="floating-label">Username</span>
+      </label>
+      <p *ngIf="getRegisterError('username')" class="field-error">{{ getRegisterError('username') }}</p>
+
+      <label class="field floating-field" for="register-email" [class.invalid]="!!getRegisterError('email')">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6H20C21.105 6 22 6.895 22 8V16C22 17.105 21.105 18 20 18H4C2.895 18 2 17.105 2 16V8C2 6.895 2.895 6 4 6Z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 8L12 14L21 8" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="register-email"
+          type="email"
+          formControlName="email"
+          required
+          autocomplete="off"
+          placeholder=" "
+        />
+        <span class="floating-label">Email</span>
+      </label>
+      <p *ngIf="getRegisterError('email')" class="field-error">{{ getRegisterError('email') }}</p>
+
+      <label class="field floating-field password-field" for="register-password" [class.invalid]="!!getRegisterError('password')">
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 10V8C8 5.791 9.791 4 12 4C14.209 4 16 5.791 16 8V10" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </span>
+        <input
+          id="register-password"
+          [type]="showRegisterPassword ? 'text' : 'password'"
+          formControlName="password"
+          required
+          autocomplete="new-password"
+          placeholder=" "
+        />
+        <span class="floating-label">Password</span>
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="toggleRegisterPasswordVisibility()"
+          [attr.aria-label]="showRegisterPassword ? 'Hide password' : 'Show password'"
+        >
+          {{ showRegisterPassword ? 'Hide' : 'Show' }}
+        </button>
+      </label>
+      <p *ngIf="getRegisterError('password')" class="field-error">{{ getRegisterError('password') }}</p>
+      <div class="strength-wrap" [class]="passwordStrengthClass">
+        <div class="strength-bar" aria-hidden="true"><span></span></div>
+        <p>Password strength: <strong>{{ passwordStrengthLabel }}</strong></p>
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="loading || registerForm.invalid">
+        <span *ngIf="loading" class="btn-spinner" aria-hidden="true"></span>
+        {{ loading ? 'Creating account...' : 'Register' }}
+      </button>
+      <button type="button" class="google-btn" (click)="loginWithGoogle()">
+        <span class="google-icon" aria-hidden="true">G</span>
+        <span>Continue with Google</span>
+      </button>
+      <p class="toggle-text">
+        Already have an account?
+        <button type="button" class="toggle-link" (click)="toggleMode()">Log in</button>
+      </p>
+    </form>
+  </section>
+</main>

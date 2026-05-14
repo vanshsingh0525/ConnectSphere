@@ -1,0 +1,42 @@
+<section *ngIf="posts.length > 0; else emptyState" class="post-grid">
+  <article class="grid-item" *ngFor="let post of posts" (mouseenter)="refreshPostCounters(post)" (focusin)="refreshPostCounters(post)" (click)="openPost(post.id)">
+    <img *ngIf="post.mediaType === 'image'" [src]="post.mediaUrl" [alt]="'Post ' + post.id" />
+    <video *ngIf="post.mediaType === 'video'" [src]="post.mediaUrl" muted preload="metadata"></video>
+    <div *ngIf="post.mediaType === 'none'" class="text-post-tile">
+      <p>{{ post.text || 'Open post' }}</p>
+    </div>
+    <div class="overlay">
+      <button type="button" class="overlay-count-btn" (click)="openLikesModal(post, $event)">
+        <svg class="overlay-icon like-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12.001 20.727c-.32 0-.639-.108-.9-.323C7.225 17.221 4 14.39 4 10.603 4 8.143 5.886 6.25 8.292 6.25c1.45 0 2.81.705 3.709 1.88.899-1.175 2.26-1.88 3.709-1.88C18.114 6.25 20 8.143 20 10.603c0 3.787-3.225 6.618-7.101 9.801-.261.215-.58.323-.898.323Z"/>
+        </svg>
+        <span>{{ post.likes }}</span>
+      </button>
+      <button type="button" class="overlay-count-btn comment-count-btn" (click)="openPost(post.id); $event.stopPropagation()">
+        <svg class="overlay-icon chat-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 10.5h10M7 14h6M21 11.5c0 4.694-4.03 8.5-9 8.5a9.53 9.53 0 0 1-3.642-.712L3 21l1.21-4.033A8.187 8.187 0 0 1 3 11.5C3 6.806 7.03 3 12 3s9 3.806 9 8.5Z"/>
+        </svg>
+        <span>{{ post.comments }}</span>
+      </button>
+    </div>
+  </article>
+</section>
+
+<app-liked-by-modal
+  [open]="likesModalOpen"
+  [accounts]="likedByAccounts"
+  [loading]="likesModalLoading"
+  [errorMessage]="likesModalError"
+  title="Likes"
+  (closed)="closeLikesModal()"
+  (accountSelected)="openLikedUser($event)"
+></app-liked-by-modal>
+
+<ng-template #emptyState>
+  <section *ngIf="showEmptyState" class="empty-state">
+    <div class="camera-icon">{{ emptyStateIcon }}</div>
+    <h3>{{ emptyStateTitle }}</h3>
+    <p>{{ emptyStateDescription }}</p>
+    <button *ngIf="showEmptyAction" type="button">Share your first photo</button>
+  </section>
+</ng-template>

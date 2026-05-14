@@ -1,0 +1,128 @@
+﻿<div class="search-shell">
+  <app-sidebar
+    class="left-sidebar"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="search-main">
+    <section class="search-panel">
+      <header class="panel-head">
+        <h1>Search</h1>
+      </header>
+
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+        </svg>
+        <input [formControl]="queryControl" type="text" placeholder="Search" aria-label="Search" />
+      </div>
+
+      <section class="results-scroll">
+        <div class="recent-head" *ngIf="showRecentSection">
+          <h3>Recent</h3>
+          <button
+            *ngIf="recentItems.length > 0"
+            type="button"
+            class="clear-all-btn"
+            (click)="clearAllRecent($event)"
+          >
+            Clear all
+          </button>
+        </div>
+
+        <p class="status" *ngIf="loading">Searching...</p>
+        <p class="status error" *ngIf="searchError">{{ searchError }}</p>
+
+        <ng-container *ngIf="showRecentSection">
+          <div
+            class="result-row recent-row"
+            *ngFor="let recent of recentItems; trackBy: trackRecent"
+            (click)="openRecent(recent)"
+            (keydown.enter)="openRecent(recent)"
+            tabindex="0"
+            role="button"
+          >
+            <div class="leading-avatar" [class.tag-avatar]="recent.type === 'hashtag'" [class.post-avatar]="recent.type === 'post'">
+              <img *ngIf="recent.imageUrl" [src]="recent.imageUrl" [alt]="recent.title" appImageFallback />
+              <span *ngIf="!recent.imageUrl && recent.type === 'hashtag'">#</span>
+              <span *ngIf="!recent.imageUrl && recent.type === 'post'">P</span>
+            </div>
+
+            <div class="row-copy">
+              <p class="username-line">
+                <span class="username">{{ recent.title }}</span>
+                <app-verified-badge [show]="!!recent.verified"></app-verified-badge>
+              </p>
+              <p class="subtitle">{{ recent.subtitle }}</p>
+            </div>
+
+            <span class="spacer"></span>
+            <button
+              type="button"
+              class="remove-btn"
+              (click)="removeRecent(recent, $event)"
+              aria-label="Remove recent search"
+            >
+              &times;
+            </button>
+          </div>
+
+          <p class="empty-note" *ngIf="recentItems.length === 0 && !loading">
+            No recent searches yet.
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="hasQuery">
+          <button
+            type="button"
+            class="result-row"
+            *ngFor="let item of combinedResults; trackBy: trackResult"
+            (click)="openResult(item)"
+          >
+            <ng-container [ngSwitch]="item.type">
+              <div *ngSwitchCase="'user'" class="leading-avatar">
+                <img [src]="item.user?.profileImageUrl ?? null" [alt]="item.user?.username ?? 'User'" appImageFallback />
+              </div>
+
+              <div *ngSwitchCase="'hashtag'" class="leading-avatar tag-avatar">
+                <span>#</span>
+              </div>
+
+              <div *ngSwitchCase="'post'" class="leading-avatar post-avatar">
+                <img *ngIf="item.post?.mediaUrl" [src]="item.post?.mediaUrl ?? null" [alt]="'Post ' + (item.post?.id ?? '')" appImageFallback />
+                <span *ngIf="!item.post?.mediaUrl">P</span>
+              </div>
+            </ng-container>
+
+            <div class="row-copy" [ngSwitch]="item.type">
+              <ng-container *ngSwitchCase="'user'">
+                <p class="username-line">
+                  <span class="username">{{ item.user?.username ?? 'user' }}</span>
+                  <app-verified-badge [show]="!!item.verified"></app-verified-badge>
+                </p>
+                <p class="subtitle">{{ item.user?.name || 'ConnectSphere user' }}</p>
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'hashtag'">
+                <p class="username">#{{ item.hashtag?.name ?? '' }}</p>
+                <p class="subtitle">{{ item.hashtag?.postCount ?? 0 }} posts</p>
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'post'">
+                <p class="username">Post #{{ item.post?.id ?? '' }}</p>
+                <p class="subtitle">{{ postPreview(item.post?.text) }}</p>
+              </ng-container>
+            </div>
+          </button>
+
+          <p class="empty-note" *ngIf="showNoResults && !loading">
+            No matching results found.
+          </p>
+        </ng-container>
+      </section>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,23 @@
+<div *ngIf="open" class="tagged-backdrop" (click)="close()">
+  <section class="tagged-shell" (click)="$event.stopPropagation()">
+    <header class="tagged-header">
+      <div></div>
+      <h3>{{ title }}</h3>
+      <button type="button" class="tagged-close" (click)="close()" aria-label="Close tagged people list">&times;</button>
+    </header>
+
+    <div class="tagged-list" *ngIf="taggedUsers.length > 0; else emptyState">
+      <button type="button" class="tagged-row" *ngFor="let user of taggedUsers" (click)="openUser(user.username)">
+        <div class="tagged-avatar">{{ avatarLabel(user.username) }}</div>
+        <div class="tagged-copy">
+          <strong>{{ displayUsername(user.username) }}</strong>
+          <span>{{ user.name || displayUsername(user.username) }}</span>
+        </div>
+      </button>
+    </div>
+  </section>
+</div>
+
+<ng-template #emptyState>
+  <p class="tagged-empty">No tagged people in this post.</p>
+</ng-template>

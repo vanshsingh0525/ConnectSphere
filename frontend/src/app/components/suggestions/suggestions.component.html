@@ -1,0 +1,31 @@
+<aside class="suggestions-shell" aria-label="Suggested users and premium features">
+  <section class="panel-card">
+    <div class="panel-head">
+      <h3>Suggested for you</h3>
+      <button type="button" (click)="toggleSeeAll()" [disabled]="!canToggleSeeAll">
+        {{ showAll ? 'See Less' : 'See All' }}
+      </button>
+    </div>
+    <p class="panel-subtitle">HAND-PICKED · REFRESHED DAILY</p>
+
+    <article *ngFor="let user of visibleUsers" class="suggestion-row">
+      <button type="button" class="avatar" [style.--avatarColor]="user.avatarColor" (click)="openProfile(user.username)">
+        <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" [alt]="user.username + ' avatar'" appImageFallback />
+        <span *ngIf="!user.avatarUrl">{{ user.username.charAt(1) }}</span>
+      </button>
+      <div class="meta">
+        <h4>
+          <button type="button" (click)="openProfile(user.username)">{{ user.username }}</button>
+          <app-verified-badge [show]="!!user.verified"></app-verified-badge>
+        </h4>
+        <p>{{ user.tagline }}</p>
+      </div>
+      <button type="button" class="follow-btn" (click)="openProfile(user.username)">View</button>
+    </article>
+  </section>
+<footer class="mini-footer">
+    <a href="#" *ngFor="let link of footerLinks">{{ link }}</a>
+  </footer>
+</aside>
+
+

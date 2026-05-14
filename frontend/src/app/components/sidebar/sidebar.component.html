@@ -1,0 +1,78 @@
+<aside
+  class="sidebar"
+  [class.expanded]="expanded"
+  [class.dark-mode]="darkMode"
+  (mouseenter)="expanded = true"
+  (mouseleave)="expanded = false"
+>
+  <input
+    #createFileInput
+    type="file"
+    accept="image/*,video/*"
+    class="hidden-file-input"
+    (change)="onCreateFileChange($event)"
+  />
+
+  <div class="brand-area">
+    <div class="brand-chip">C</div>
+    <div class="brand-copy" *ngIf="expanded">
+      <strong>ConnectSphere</strong>
+      <span>SOCIAL, REFINED</span>
+    </div>
+  </div>
+
+  <nav aria-label="Dashboard navigation" class="nav-menu">
+    <button
+      type="button"
+      *ngFor="let item of visibleItems"
+      class="nav-item"
+      [class.active]="activeItem === item.label"
+      (click)="onItemClick(item.label)"
+      [attr.aria-label]="item.label"
+      [attr.title]="item.label"
+    >
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span class="label" *ngIf="expanded">{{ item.label }}</span>
+      <span class="badge" *ngIf="item.label === 'Notifications' && notificationCount > 0">{{ notificationCount }}</span>
+    </button>
+  </nav>
+
+  <div class="more-actions" (click)="onMoreMenuClick($event)" *ngIf="isAuthenticated">
+    <button
+      #moreTrigger
+      type="button"
+      class="settings-btn"
+      title="More"
+      aria-label="More"
+      (click)="toggleMore(); $event.stopPropagation()"
+    >
+      <span class="nav-icon">...</span>
+      <span class="label" *ngIf="expanded">More</span>
+    </button>
+
+    <app-more-menu
+      *ngIf="isMoreOpen"
+      [top]="moreMenuTop"
+      [left]="moreMenuLeft"
+      [showAdminOption]="isAdminUser"
+      (admin)="openAdminConsole()"
+      (settings)="openSettings()"
+      (logout)="logout()"
+    ></app-more-menu>
+  </div>
+
+  <div class="more-actions" *ngIf="!isAuthenticated">
+    <button type="button" class="settings-btn" (click)="goToLogin()">
+      <span class="label" *ngIf="expanded">Login</span>
+      <span class="nav-icon" *ngIf="!expanded">L</span>
+    </button>
+    <button type="button" class="settings-btn" (click)="goToSignup()">
+      <span class="label" *ngIf="expanded">Sign Up</span>
+      <span class="nav-icon" *ngIf="!expanded">S</span>
+    </button>
+  </div>
+
+  <button type="button" class="quick-create-btn" *ngIf="darkMode" (click)="onItemClick('Create')" aria-label="Create post">
+    +
+  </button>
+</aside>

@@ -1,0 +1,465 @@
+<div class="post-view-backdrop" (click)="close()">
+  <button type="button" class="close-btn" (click)="close()" aria-label="Close post view">&times;</button>
+
+  <section class="post-view-shell" (click)="$event.stopPropagation()">
+    <div class="status-card" *ngIf="loading">Loading post...</div>
+    <div class="status-card error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+
+    <ng-container *ngIf="!loading && !errorMessage && post">
+      <div class="media-pane" (dblclick)="onMediaDoubleClick()">
+        <ng-container *ngIf="activeMedia as media; else emptyMediaState">
+          <button
+            *ngIf="(post.taggedUsers?.length ?? 0) > 0"
+            type="button"
+            class="tagged-overlay-btn"
+            (click)="openTaggedUsers($event)"
+            aria-label="View tagged people"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="tagged-overlay-icon">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+          <img *ngIf="media.type === 'image'" [src]="media.url" [alt]="'Post ' + post.id" />
+          <video *ngIf="media.type === 'video'" [src]="media.url" controls autoplay muted></video>
+
+          <button
+            *ngIf="hasMultipleMedia"
+            type="button"
+            class="media-nav prev"
+            aria-label="Previous media"
+            (click)="previousMedia()"
+          >
+            &#8249;
+          </button>
+          <button
+            *ngIf="hasMultipleMedia"
+            type="button"
+            class="media-nav next"
+            aria-label="Next media"
+            (click)="nextMedia()"
+          >
+            &#8250;
+          </button>
+
+          <div class="media-dots" *ngIf="hasMultipleMedia">
+            <button
+              type="button"
+              *ngFor="let mediaItem of mediaItems; let index = index"
+              class="media-dot"
+              [class.active]="index === activeMediaIndex"
+              [attr.aria-label]="'Open media ' + (index + 1)"
+              (click)="selectMedia(index)"
+            ></button>
+          </div>
+        </ng-container>
+
+        <ng-template #emptyMediaState>
+          <div class="media-empty">No media available</div>
+        </ng-template>
+      </div>
+
+      <div class="details-pane">
+        <header class="author-row">
+          <div class="header-user-group">
+            <button type="button" class="author-chip" (click)="openProfile(author?.username ?? '')">
+              <img
+                [src]="author?.profileImageUrl || defaultAvatarUrl"
+                [alt]="(author?.username || 'user') + ' avatar'"
+                appImageFallback
+              />
+              <div>
+              <strong>{{ author?.username || ('user' + post.authorId) }}</strong>
+              <app-verified-badge [show]="!!author?.verified"></app-verified-badge>
+              </div>
+            </button>
+
+            <button
+              *ngIf="canFollowAuthor"
+              type="button"
+              class="follow-btn"
+              [class.following]="isFollowingAuthor || isFollowPending"
+              [disabled]="followBusy"
+              (click)="toggleFollowAuthor()"
+            >
+              {{ followBusy ? 'Please wait...' : (isFollowingAuthor ? 'Following' : (isFollowPending ? 'Requested' : 'Follow')) }}
+            </button>
+          </div>
+
+          <div class="post-menu-wrap" #postMenuWrap>
+            <button type="button" class="post-menu-btn" (click)="toggleMenu()" aria-label="Post options">...</button>
+            <div class="post-menu" *ngIf="menuOpen">
+              <button type="button" [disabled]="saveBusy" (click)="toggleSave()">
+                {{ saveBusy ? 'Working...' : (post.saved ? 'Unsave Post' : 'Save Post') }}
+              </button>
+              <button type="button" *ngIf="canEditPost" (click)="editPost()">
+                Edit Post
+              </button>
+              <button type="button" class="danger" *ngIf="canDeletePost" [disabled]="deletingPost" (click)="deletePost()">
+                {{ deletingPost ? 'Deleting...' : 'Delete Post' }}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <section class="caption-block">
+          <p class="caption-head">
+            <button type="button" class="caption-user" (click)="openProfile(author?.username ?? '')">
+              {{ author?.username || ('user' + post.authorId) }}
+            </button>
+            <app-verified-badge [show]="!!author?.verified"></app-verified-badge>
+            <span class="caption-text">
+              <ng-container *ngFor="let token of captionTokens">
+                <span *ngIf="token.type === 'text'">{{ token.value }}</span>
+                <button
+                  *ngIf="token.type === 'hashtag'"
+                  type="button"
+                  class="caption-entity-link"
+                  (click)="openHashtag(token.value)"
+                >
+                  #{{ token.value }}
+                </button>
+                <button
+                  *ngIf="token.type === 'mention'"
+                  type="button"
+                  class="caption-entity-link"
+                  (click)="openProfile(token.value)"
+                >
+                  <span aria-hidden="true">&#64;</span>{{ token.value }}
+                </button>
+              </ng-container>
+            </span>
+          </p>
+
+          <div class="post-meta-row" *ngIf="(post.hashtags?.length ?? 0) > 0 || post.location">
+            <span *ngIf="post.location" class="meta-chip">{{ post.location }}</span>
+            <button
+              type="button"
+              *ngFor="let tag of post.hashtags ?? []"
+              class="meta-chip accent clickable-chip"
+              (click)="openHashtag(tag)"
+            >
+              #{{ tag }}
+            </button>
+          </div>
+
+          <div class="caption-subline">
+            <p class="post-date">{{ post.createdAt | date:'mediumDate' }}</p>
+            <span *ngIf="isPostEdited" class="edited-label">Edited</span>
+          </div>
+          <p class="delete-error" *ngIf="deleteErrorMessage">{{ deleteErrorMessage }}</p>
+        </section>
+
+        <section class="comments-pane">
+          <ng-container *ngTemplateOutlet="commentThread; context: { $implicit: comments, level: 0 }"></ng-container>
+          <p class="comments-empty" *ngIf="comments.length === 0">No comments yet. Start the conversation.</p>
+        </section>
+
+        <section class="actions-pane">
+          <div class="action-row action-row--instagram">
+            <div class="action-icons-left">
+              <button
+                type="button"
+                class="icon-action-btn"
+                [class.active]="isLiked"
+                [disabled]="likeBusy"
+                (click)="toggleLike()"
+                aria-label="Like post"
+              >
+                <svg
+                  class="interaction-icon interaction-icon--like"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12.001 20.727c-.32 0-.639-.108-.9-.323C7.225 17.221 4 14.39 4 10.603 4 8.143 5.886 6.25 8.292 6.25c1.45 0 2.81.705 3.709 1.88.899-1.175 2.26-1.88 3.709-1.88C18.114 6.25 20 8.143 20 10.603c0 3.787-3.225 6.618-7.101 9.801-.261.215-.58.323-.898.323Z"
+                    [attr.fill]="isLiked ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="1.85"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <button type="button" class="icon-action-btn" (click)="focusCommentInput()" aria-label="Add a comment">
+                <svg
+                  class="interaction-icon interaction-icon--comment"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 4.75c-4.556 0-8.25 3.308-8.25 7.387 0 2.235 1.113 4.238 2.873 5.593l-.736 3.346a.45.45 0 0 0 .653.486l3.359-1.82c.668.17 1.373.258 2.101.258 4.556 0 8.25-3.308 8.25-7.387S16.556 4.75 12 4.75Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.85"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <button type="button" class="icon-action-btn icon-action-btn--share" [disabled]="shareBusy" (click)="sharePost()" aria-label="Share post">
+                <svg
+                  class="interaction-icon interaction-icon--share"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20.218 4.782a1 1 0 0 0-1.09-.217L5.55 10.05a1 1 0 0 0 .083 1.878l5.104 1.701 1.701 5.104a1 1 0 0 0 1.878.083l5.485-13.578a1 1 0 0 0-.083-.456Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.85"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M10.737 13.629 19.5 4.865"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.85"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              class="icon-action-btn icon-action-btn--bookmark"
+              [class.active]="post.saved"
+              [disabled]="saveBusy"
+              (click)="toggleSave()"
+              aria-label="Save post"
+            >
+              <svg
+                class="bookmark-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 3.5H18C18.5523 3.5 19 3.94772 19 4.5V20.2C19 20.3782 18.7893 20.4736 18.6549 20.3556L12.3307 14.8036C12.1419 14.6379 11.8581 14.6379 11.6693 14.8036L5.34511 20.3556C5.21066 20.4736 5 20.3782 5 20.2V4.5C5 3.94772 5.44772 3.5 6 3.5Z"
+                  [attr.fill]="post.saved ? 'currentColor' : 'none'"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <button type="button" class="likes-label" (click)="openLikesModal()">
+            {{ likeCount }} {{ likeCount === 1 ? 'like' : 'likes' }}
+          </button>
+
+          <p class="share-feedback" *ngIf="shareFeedbackMessage">{{ shareFeedbackMessage }}</p>
+
+          <div class="comment-form comment-form--instagram" (click)="$event.stopPropagation()">
+            <div class="emoji-picker-wrap">
+              <button
+                type="button"
+                class="comment-form__emoji-btn"
+                [class.active]="emojiPickerOpen"
+                (click)="toggleEmojiPicker($event)"
+                aria-label="Open emoji picker"
+              >
+                <span class="comment-form__emoji" aria-hidden="true">&#9786;</span>
+              </button>
+
+              <div class="emoji-picker" *ngIf="emojiPickerOpen" (click)="$event.stopPropagation()">
+                <button
+                  type="button"
+                  class="emoji-picker__item"
+                  *ngFor="let emoji of emojiOptions"
+                  (click)="addEmoji(emoji, $event)"
+                >
+                  {{ emoji }}
+                </button>
+              </div>
+            </div>
+            <input
+              #commentInput
+              [(ngModel)]="commentText"
+              type="text"
+              placeholder="Add a comment..."
+              (keydown.enter)="submitComment()"
+            />
+            <button type="button" class="comment-form__post-btn" [disabled]="!canSubmitComment" (click)="submitComment()">
+              {{ submittingComment ? 'Posting...' : 'Post' }}
+            </button>
+          </div>
+          <p class="comments-empty" *ngIf="commentErrorMessage">{{ commentErrorMessage }}</p>
+        </section>
+      </div>
+    </ng-container>
+  </section>
+</div>
+
+<app-liked-by-modal
+  [open]="likesModalOpen"
+  [accounts]="likedByAccounts"
+  [loading]="likesModalLoading"
+  [errorMessage]="likesModalError"
+  [title]="likesModalTitle"
+  (closed)="closeLikesModal()"
+  (accountSelected)="openProfile($event)"
+></app-liked-by-modal>
+
+<app-tagged-users-modal
+  [open]="taggedUsersModalOpen"
+  [taggedUsers]="taggedUserEntries"
+  (closed)="closeTaggedUsers()"
+  (userSelected)="openTaggedUser($event)"
+></app-tagged-users-modal>
+
+<div
+  *ngIf="showSaveToast"
+  class="save-toast"
+  [class.unsaved]="saveToastTone === 'unsaved'"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  <div class="save-toast__icon" *ngIf="saveToastTone === 'saved'">&#10003;</div>
+  <div class="save-toast__icon" *ngIf="saveToastTone === 'unsaved'">&#8634;</div>
+  <div class="save-toast__content">
+    <strong>{{ saveToastTone === 'saved' ? 'Saved' : 'Unsaved' }}</strong>
+    <span>{{ saveToastMessage }}</span>
+  </div>
+  <button type="button" class="save-toast__close" (click)="dismissSaveToast()" aria-label="Dismiss message">&times;</button>
+</div>
+
+<ng-template #commentThread let-comments let-level="level">
+  <ng-container *ngFor="let comment of comments; trackBy: trackComment">
+    <article class="comment-row" *ngIf="!comment.deleted" [class.is-reply]="level > 0">
+    <div class="comment-avatar-wrap">
+      <img [src]="comment.profileImageUrl" [alt]="comment.username + ' avatar'" appImageFallback />
+    </div>
+
+    <div class="comment-body">
+      <div class="comment-top">
+        <p [class.comment-copy--reply]="level > 0">
+          <button type="button" class="comment-author-btn" (click)="openProfile(comment.username)">{{ comment.username }}</button>
+          <app-verified-badge [show]="!!comment.verified"></app-verified-badge>
+          <button
+            *ngIf="comment.leadingMentionUsername"
+            type="button"
+            class="comment-mention-btn"
+            (click)="openProfile(comment.leadingMentionUsername)"
+          >
+            &#64;{{ comment.leadingMentionUsername }}
+          </button>
+          <span *ngIf="comment.bodyText && editingCommentId !== comment.id">{{ comment.bodyText }}</span>
+        </p>
+
+        <div class="comment-side-actions">
+          <button
+            type="button"
+            class="comment-icon-btn heart-btn"
+            [class.active]="comment.isLiked"
+            [disabled]="comment.likeBusy"
+            (click)="toggleCommentLike(comment)"
+            aria-label="Like comment"
+          >
+            <svg class="comment-heart-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12.001 20.727c-.32 0-.639-.108-.9-.323C7.225 17.221 4 14.39 4 10.603 4 8.143 5.886 6.25 8.292 6.25c1.45 0 2.81.705 3.709 1.88.899-1.175 2.26-1.88 3.709-1.88C18.114 6.25 20 8.143 20 10.603c0 3.787-3.225 6.618-7.101 9.801-.261.215-.58.323-.898.323Z"
+                [attr.fill]="comment.isLiked ? 'currentColor' : 'none'"
+                stroke="currentColor"
+                stroke-width="1.85"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div
+            *ngIf="canManageComment(comment)"
+            class="comment-menu-wrap"
+            [class.open]="commentMenuOpenId === comment.id"
+            (click)="$event.stopPropagation()"
+          >
+            <button
+              type="button"
+              class="comment-menu-trigger"
+              aria-label="Comment options"
+              (click)="toggleCommentMenu(comment, $event)"
+            >
+              &#8230;
+            </button>
+            <div class="comment-menu" [class.open]="commentMenuOpenId === comment.id">
+              <button
+                *ngIf="canEditComment(comment)"
+                type="button"
+                class="comment-menu-item"
+                (click)="startEditComment(comment, $event)"
+              >
+                Edit Comment
+              </button>
+              <button
+                *ngIf="canDeleteComment(comment)"
+                type="button"
+                class="comment-menu-item danger"
+                (click)="deleteComment(comment)"
+              >
+                Delete Comment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment-edit-row" *ngIf="editingCommentId === comment.id">
+        <input
+          class="comment-edit-input"
+          [(ngModel)]="editText"
+          type="text"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="saveEdit(comment)"
+        />
+        <div class="comment-edit-actions">
+          <button type="button" class="comment-edit-cancel" (click)="cancelEdit()">Cancel</button>
+          <button
+            type="button"
+            class="comment-edit-save"
+            [disabled]="editBusy || !editText.trim()"
+            (click)="saveEdit(comment)"
+          >
+            {{ editBusy ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="comment-meta">
+        <span>{{ getRelativeCommentTimeLabel(comment.createdAt) }}</span>
+        <span *ngIf="shouldShowCommentEdited(comment)">Edited</span>
+        <button
+          *ngIf="comment.likesCount > 0"
+          type="button"
+          class="comment-action-btn"
+          (click)="openCommentLikesModal(comment, $event)"
+        >
+          {{ comment.likesCount }} {{ comment.likesCount === 1 ? 'like' : 'likes' }}
+        </button>
+        <button type="button" class="comment-action-btn" (click)="openReply(comment)">Reply</button>
+      </div>
+
+      <button
+        *ngIf="hasReplies(comment)"
+        type="button"
+        class="reply-toggle-btn"
+        (click)="toggleReplies(comment)"
+      >
+        {{ areRepliesExpanded(comment) ? 'Hide replies' : ('View replies (' + comment.replies.length + ')') }}
+      </button>
+
+      <div class="comment-replies" *ngIf="areRepliesExpanded(comment) && comment.replies.length > 0">
+        <ng-container *ngTemplateOutlet="commentThread; context: { $implicit: comment.replies, level: 1 }"></ng-container>
+      </div>
+    </div>
+    </article>
+  </ng-container>
+</ng-template>

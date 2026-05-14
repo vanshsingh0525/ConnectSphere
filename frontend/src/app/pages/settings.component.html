@@ -1,0 +1,119 @@
+<div class="settings-shell">
+  <app-sidebar
+    class="sidebar-host"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="settings-main">
+    <section class="settings-card">
+      <header>
+        <p class="eyebrow">Settings</p>
+        <h1>Account controls</h1>
+        <p>Keep your ConnectSphere profile, notifications, and comments preferences in one place.</p>
+      </header>
+
+      <div class="settings-container">
+        <button type="button" (click)="goToEditProfile()">Edit Profile</button>
+        <button type="button" (click)="goToNotifications()">Notifications</button>
+        <button type="button" (click)="goToComments()">Comments</button>
+        <button type="button" (click)="goToYourActivity()">Your Activity</button>
+      </div>
+
+      <section class="privacy-card">
+        <div class="privacy-copy">
+          <p class="eyebrow">Account Privacy</p>
+          <h2>{{ isPublic ? 'Public Account' : 'Private Account' }}</h2>
+          <p *ngIf="isPublic">
+            Anyone can follow directly and view your posts and stories.
+          </p>
+          <p *ngIf="!isPublic">
+            Only approved followers can view your posts and stories. New followers must send a request first.
+          </p>
+        </div>
+
+        <label class="privacy-toggle" [class.is-disabled]="privacyLoading || privacySaving">
+          <input
+            type="checkbox"
+            [checked]="!isPublic"
+            [disabled]="privacyLoading || privacySaving"
+            (change)="onPrivacyToggle(!($any($event.target).checked))"
+          />
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-label">{{ privacySaving ? 'Saving...' : 'Private account' }}</span>
+        </label>
+
+        <p class="status-text" *ngIf="privacyLoading">Loading privacy settings...</p>
+        <p class="status-text success" *ngIf="!privacyLoading && privacyMessage">{{ privacyMessage }}</p>
+        <p class="status-text error" *ngIf="!privacyLoading && privacyError">{{ privacyError }}</p>
+      </section>
+
+      <section class="verification-card" [class.verified-active]="isVerified">
+        <div class="verification-glow-orb" *ngIf="isVerified" aria-hidden="true"></div>
+        <div class="verification-head">
+          <p class="eyebrow">{{ isVerified ? 'Verified Creator Membership' : 'Creator Verification' }}</p>
+          <h2>
+            {{ isVerified ? 'You are officially verified on ConnectSphere.' : 'Get a verified badge and build trust with your audience.' }}
+          </h2>
+          <p *ngIf="!isVerified">Premium identity badge visible on profile, feed, search and comments.</p>
+          <p *ngIf="isVerified">
+            Your identity badge is active across profile, comments, feed, search and creator interactions.
+          </p>
+        </div>
+
+        <ng-container *ngIf="!isVerified; else verifiedMembershipCard">
+          <ul class="verification-benefits">
+            <li>Blue verification badge across ConnectSphere</li>
+            <li>Higher profile trust for followers</li>
+            <li>Secure payment via Razorpay</li>
+          </ul>
+          <div class="verification-foot">
+            <div class="verification-price">
+              <strong>Rs 199/month</strong>
+              <span>or Rs 999/year</span>
+            </div>
+            <button type="button" class="verify-btn" [disabled]="verificationLoading || isVerified" (click)="startVerificationCheckout()">
+              {{ verificationLoading ? 'Processing...' : 'Get Verified' }}
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-template #verifiedMembershipCard>
+          <ul class="verification-benefits verified-benefits">
+            <li>Verified Badge Active</li>
+            <li>Priority Profile Trust</li>
+            <li>Enhanced Creator Presence</li>
+            <li>Secure Membership via Razorpay</li>
+          </ul>
+
+          <div class="verified-chips" aria-label="Membership badges">
+            <span class="verified-chip" *ngFor="let chip of verifiedMembershipChips">{{ chip }}</span>
+          </div>
+
+          <div class="membership-meta">
+            <p><span>Membership Status:</span> ACTIVE</p>
+            <p><span>Plan:</span> {{ verificationPlanLabel }}</p>
+            <p *ngIf="verifiedSinceLabel"><span>Verified since:</span> {{ verifiedSinceLabel }}</p>
+          </div>
+
+          <div class="verification-foot">
+            <button
+              type="button"
+              class="verify-btn verify-btn-active"
+              disabled
+              title="Your verified membership is already active"
+            >
+              Verified Active &#10003;
+            </button>
+          </div>
+        </ng-template>
+
+        <p class="status-text success" *ngIf="verificationMessage">{{ verificationMessage }}</p>
+        <p class="status-text error" *ngIf="verificationError">{{ verificationError }}</p>
+      </section>
+    </section>
+  </main>
+</div>

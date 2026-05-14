@@ -1,0 +1,26 @@
+<section class="stories-wrap" aria-label="Stories">
+  <header class="stories-head">
+    <div>
+      <h3>Stories</h3>
+      <p>TODAY · CURATED</p>
+    </div>
+    <button type="button" class="see-all-btn">See all</button>
+  </header>
+
+  <div class="stories-track">
+    <article
+      *ngFor="let story of visibleStories"
+      class="story-item"
+      [class.add-story]="story.isAddStory"
+      [class.seen-story]="!story.isAddStory && story.hasUnseen === false"
+      (click)="onStoryClick(story)"
+    >
+      <div class="ring" [style.--avatarColor]="story.avatarColor">
+        <img *ngIf="story.avatarUrl" class="avatar" [src]="story.avatarUrl" [alt]="story.name + ' avatar'" appImageFallback />
+        <div *ngIf="!story.avatarUrl" class="avatar">{{ story.name.charAt(0) }}</div>
+        <span class="plus-chip" *ngIf="story.isAddStory">+</span>
+      </div>
+      <p>{{ story.name }}</p>
+    </article>
+  </div>
+</section>

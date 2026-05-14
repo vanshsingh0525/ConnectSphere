@@ -1,0 +1,19 @@
+<section class="feed-shell">
+  <app-stories
+    [stories]="stories"
+    (addStory)="onAddStory()"
+    (storySelected)="onStorySelected($event)"
+  ></app-stories>
+
+  <div class="feed-list">
+    <app-post-card
+      *ngFor="let post of visiblePosts; trackBy: trackByPostId"
+      [post]="post"
+      (userSelected)="onUserSelected($event)"
+      (editRequested)="onEditRequested($event)"
+    ></app-post-card>
+
+    <div class="feed-status" *ngIf="visiblePosts.length < posts.length">Scroll to load more posts</div>
+    <div class="feed-status done" *ngIf="visiblePosts.length === posts.length">You are all caught up</div>
+  </div>
+</section>

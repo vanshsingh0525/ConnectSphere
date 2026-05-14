@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
+.feed-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.feed-list {
+  min-height: 0;
+  display: grid;
+  gap: 1.35rem;
+  animation: feedFadeIn 0.4s ease;
+}
+
+@keyframes feedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feed-status {
+  text-align: center;
+  color: var(--text-muted, #5b6f9f);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  padding: 0.6rem 0 1.2rem;
+}
+
+.feed-status.done {
+  color: var(--accent-strong, #3d5eb1);
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .feed-shell { min-height: 0; }
+}

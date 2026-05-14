@@ -1,0 +1,39 @@
+<main class="success-shell">
+  <div class="glow glow-left" aria-hidden="true"></div>
+  <div class="glow glow-right" aria-hidden="true"></div>
+  <div class="confetti" aria-hidden="true"></div>
+
+  <section class="success-card">
+    <div class="success-icon" aria-hidden="true">
+      <div class="badge-ring">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="11"></circle>
+          <path d="M7.2 12.4 10.3 15.2 16.8 8.8"></path>
+        </svg>
+      </div>
+    </div>
+
+    <h1>Verified Successfully</h1>
+    <p class="subtitle">Your ConnectSphere profile is now officially verified.</p>
+
+    <div class="meta">
+      <p><span>{{ '@' + displayUsername }}</span></p>
+      <p>Plan Activated: <strong>{{ displayPlanName }}</strong></p>
+      <p>Payment completed and verification badge activated.</p>
+    </div>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="primary"
+        (click)="goToProfile()"
+        [disabled]="refreshingProfile"
+        aria-label="Go to my profile"
+        title="Go to my profile"
+      >
+        <span class="btn-label">Go to my profile</span>
+      </button>
+      <button type="button" class="secondary" (click)="goHome()">Back to Home</button>
+    </div>
+  </section>
+</main>

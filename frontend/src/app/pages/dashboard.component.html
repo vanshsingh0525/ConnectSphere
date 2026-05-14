@@ -1,0 +1,196 @@
+<div class="dashboard-shell" [class.dark-mode]="darkMode" [class.about-view]="activeView === 'about'">
+  <input
+    #storyUploadInput
+    type="file"
+    accept="image/*,video/*"
+    hidden
+    (change)="onStoryFileChange($event)"
+  />
+  <app-sidebar
+    class="left-sidebar"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    [darkMode]="darkMode"
+    createBehavior="wizard"
+    (itemSelected)="onSidebarSelection($event)"
+    (fileSelected)="onCreateFileSelected($event)"
+    (createRequested)="openCreateWizard()"
+  ></app-sidebar>
+
+  <main class="center-column">
+    <section class="feed-area" *ngIf="activeView === 'feed'">
+<p class="create-status error" *ngIf="feedErrorMessage">{{ feedErrorMessage }}</p>
+      <p class="create-status success standalone" *ngIf="createSuccessMessage">{{ createSuccessMessage }}</p>
+
+      <app-feed
+        [stories]="stories"
+        [posts]="filteredPosts"
+        (userSelected)="openUserProfile($event)"
+        (addStory)="onAddStoryRequested()"
+        (storySelected)="onStorySelected($event)"
+        (editRequested)="onEditRequested($event)"
+      ></app-feed>
+    </section>
+
+    <section class="about-area" *ngIf="activeView === 'about'">
+      <app-about-section [updates]="updates" [announcements]="announcements"></app-about-section>
+    </section>
+  </main>
+
+  <app-suggestions *ngIf="activeView === 'feed'" class="right-panel" [users]="suggestedUsers" (userSelected)="openUserProfile($event)"></app-suggestions>
+
+  <app-story-viewer
+    [isOpen]="storyViewerOpen"
+    [storyGroups]="stories"
+    [startUserId]="storyViewerStartUserId"
+    (closed)="onStoryViewerClosed()"
+  ></app-story-viewer>
+</div>
+
+<section class="create-wizard-shell" *ngIf="createWizardOpen">
+  <div class="create-wizard-backdrop" (click)="closeCreateWizard()"></div>
+
+  <article class="create-wizard-card" (click)="$event.stopPropagation()">
+    <header class="wizard-head">
+      <button type="button" class="wizard-nav-btn" (click)="closeCreateWizard()">Close</button>
+      <div class="wizard-head-copy">
+        <strong>{{ editMode ? 'Edit Post' : 'Create Post' }}</strong>
+        <span>Design your post in 4 guided steps</span>
+      </div>
+      <div class="wizard-head-badge">Step {{ createStep }} of 4</div>
+    </header>
+
+    <div class="wizard-stepper">
+      <button type="button" [class.active]="createStep >= 1" [class.current]="createStep === 1" (click)="goToCreateStep(1)"><span class="step-index">1</span><span>Media</span></button>
+      <button type="button" [class.active]="createStep >= 2" [class.current]="createStep === 2" (click)="goToCreateStep(2)"><span class="step-index">2</span><span>Preview</span></button>
+      <button type="button" [class.active]="createStep >= 3" [class.current]="createStep === 3" (click)="goToCreateStep(3)"><span class="step-index">3</span><span>Details</span></button>
+      <button type="button" [class.active]="createStep >= 4" [class.current]="createStep === 4" (click)="goToCreateStep(4)"><span class="step-index">4</span><span>Tags</span></button>
+    </div>
+
+    <p class="create-status error" *ngIf="createErrorMessage">{{ createErrorMessage }}</p>
+
+    <section class="wizard-body step-animated" [attr.data-step]="createStep">
+      <div class="wizard-upload-panel">
+        <div class="wizard-control-group" *ngIf="createStep === 1">
+          <h3>Select Media</h3>
+          <p>Upload an image or video to begin your post.</p>
+          <label class="wizard-upload-dropzone" [class.dragover]="isCreateDropzoneActive" (dragover)="onCreateDropzoneDragOver($event)" (dragleave)="onCreateDropzoneDragLeave($event)" (drop)="onCreateDropzoneDrop($event)">
+            <input type="file" accept="image/*,video/*" (change)="onCreateFileChange($event)" />
+            <span class="upload-icon">+</span>
+            <span class="upload-primary">Drag & drop or click to upload</span>
+            <span class="upload-secondary">PNG, JPG, WEBP, MP4 up to 10MB</span>
+          </label>
+          <p class="wizard-help-text" *ngIf="selectedCreateFileName">Selected: {{ selectedCreateFileName }}</p>
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 2">
+          <h3>Crop / Resize</h3>
+          <div class="wizard-chip-row">
+            <button type="button" [class.active]="createAspectRatio === 'original'" (click)="createAspectRatio = 'original'">Original</button>
+            <button type="button" [class.active]="createAspectRatio === 'square'" (click)="createAspectRatio = 'square'">Square</button>
+            <button type="button" [class.active]="createAspectRatio === 'portrait'" (click)="createAspectRatio = 'portrait'">Portrait</button>
+          </div>
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 2">
+          <h3>Filters</h3>
+          <div class="wizard-chip-row">
+            <button type="button" [class.active]="createFilter === 'normal'" (click)="createFilter = 'normal'">Normal</button>
+            <button type="button" [class.active]="createFilter === 'warm'" (click)="createFilter = 'warm'">Warm</button>
+            <button type="button" [class.active]="createFilter === 'cool'" (click)="createFilter = 'cool'">Cool</button>
+            <button type="button" [class.active]="createFilter === 'mono'" (click)="createFilter = 'mono'">Mono</button>
+          </div>
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 3">
+          <h3>Caption</h3>
+          <textarea [(ngModel)]="createCaption" rows="8" maxlength="2200" placeholder="Write a caption..." aria-label="Post caption"></textarea>
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 3">
+          <h3>Location</h3>
+          <input [(ngModel)]="createLocation" type="text" maxlength="255" placeholder="Add location (optional)" />
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 4">
+          <h3>Add Hashtags</h3>
+          <div class="wizard-input-row">
+            <input [(ngModel)]="createHashtagInput" type="text" placeholder="#travel #coding" (input)="onHashtagInputChange()" (keyup.enter)="addHashtagChip(createHashtagInput)" />
+            <button type="button" (click)="addHashtagChip(createHashtagInput)">Add</button>
+          </div>
+          <div class="wizard-suggestion-list" *ngIf="hashtagSuggestions.length > 0">
+            <button type="button" *ngFor="let hashtag of hashtagSuggestions" (click)="addHashtagChip(hashtag.name)">#{{ hashtag.name }}</button>
+          </div>
+          <p class="wizard-help-text" *ngIf="hashtagSuggestionsLoading">Loading hashtag suggestions...</p>
+          <div class="wizard-chip-list" *ngIf="selectedHashtags.length > 0">
+            <button type="button" class="wizard-chip" *ngFor="let hashtag of selectedHashtags" (click)="removeHashtagChip(hashtag)">#{{ hashtag }} ×</button>
+          </div>
+        </div>
+
+        <div class="wizard-control-group" *ngIf="createStep === 4">
+          <h3>Tag Users</h3>
+          <div class="wizard-input-row">
+            <input [(ngModel)]="createMentionInput" type="text" placeholder="@username" (input)="onMentionInputChange()" (keyup.enter)="addTaggedUserByInput()" />
+            <button type="button" (click)="addTaggedUserByInput()">Add</button>
+          </div>
+          <div class="wizard-suggestion-list" *ngIf="mentionSuggestions.length > 0">
+            <button type="button" *ngFor="let user of mentionSuggestions" (click)="addTaggedUser(user)"><strong>&#64;{{ user.username }}</strong><span>{{ user.name }}</span></button>
+          </div>
+          <p class="wizard-help-text" *ngIf="mentionSuggestionsLoading">Loading user suggestions...</p>
+          <div class="wizard-chip-list" *ngIf="selectedTaggedUsers.length > 0">
+            <button type="button" class="wizard-chip" *ngFor="let user of selectedTaggedUsers" (click)="removeTaggedUser(user.username)">&#64;{{ user.username }} ×</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="wizard-preview-pane">
+        <article class="preview-post-card">
+          <header class="preview-post-head">
+            <div class="preview-avatar">{{ (user?.username || 'U').charAt(0) | uppercase }}</div>
+            <div>
+              <h4>{{ user?.username ? '@' + user?.username : '@you' }}</h4>
+              <p>{{ createLocation || 'Your location' }}</p>
+            </div>
+          </header>
+
+          <div class="wizard-edit-preview" [style.aspect-ratio]="createPreviewAspectRatio()" [style.filter]="applyCreateFilterStyle()">
+            <ng-container *ngIf="selectedCreateFilePreviewUrl; else emptyPreview">
+              <img *ngIf="!selectedCreateFileIsVideo" [src]="selectedCreateFilePreviewUrl" alt="Post preview" />
+              <video *ngIf="selectedCreateFileIsVideo" [src]="selectedCreateFilePreviewUrl" controls muted></video>
+            </ng-container>
+            <ng-template #emptyPreview>
+              <div class="preview-empty-state">Live preview appears here</div>
+            </ng-template>
+          </div>
+
+          <div class="preview-caption-block">
+            <p class="preview-caption-text">{{ createCaption || 'Write a caption to preview it here...' }}</p>
+            <div class="preview-hashtags" *ngIf="combinedHashtagsForPreview().length > 0">
+              <span *ngFor="let tag of combinedHashtagsForPreview()">#{{ tag }}</span>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </section>
+
+    <footer class="wizard-actions">
+      <button type="button" class="wizard-nav-btn" (click)="createStep === 1 ? closeCreateWizard() : previousCreateStep()">{{ createStep === 1 ? 'Cancel' : 'Back' }}</button>
+      <button type="button" class="wizard-nav-btn primary" *ngIf="createStep < 4" (click)="nextCreateStep()" [disabled]="isWizardNextDisabled()">Next</button>
+      <button type="button" class="wizard-nav-btn primary" *ngIf="createStep === 4" (click)="submitCreatePost()" [disabled]="creatingPost">{{ creatingPost ? (editMode ? 'Saving...' : 'Sharing...') : (editMode ? 'Save Changes' : 'Share Post') }}</button>
+    </footer>
+  </article>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

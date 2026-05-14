@@ -1,0 +1,134 @@
+<div class="about-page" aria-label="About ConnectSphere">
+  <section class="hero reveal" #revealCard>
+    <div class="hero-glow glow-a" aria-hidden="true"></div>
+    <div class="hero-glow glow-b" aria-hidden="true"></div>
+    <div class="hero-dots" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <p class="eyebrow">Next-generation social platform</p>
+      <h1>ConnectSphere</h1>
+      <h2>Where conversations, creators, and communities connect beautifully.</h2>
+      <p>
+        Share stories, build connections, discover creators, and experience a next-generation social
+        platform designed for meaningful interactions.
+      </p>
+      <div class="hero-actions">
+        <button type="button">Explore Platform</button>
+        <button type="button" class="ghost">Learn More</button>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <article class="float-card card-story">
+        <strong>Stories live now</strong>
+        <span>12 creators sharing moments</span>
+      </article>
+      <article class="float-card card-notification">
+        <strong>Realtime update</strong>
+        <span>&#64;alex liked your post</span>
+      </article>
+      <article class="float-card card-message">
+        <strong>Message</strong>
+        <span>"Launch visuals look amazing"</span>
+      </article>
+      <article class="float-card card-feed">
+        <strong>Community Pulse</strong>
+        <span>Trending: #buildinpublic</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section features reveal" #revealCard>
+    <header>
+      <p class="eyebrow">Platform Features</p>
+      <h3>Built for modern communities and creator growth</h3>
+    </header>
+    <div class="feature-grid">
+      <article class="feature-card" *ngFor="let card of featureCards">
+        <span class="icon">{{ card.icon }}</span>
+        <h4>{{ card.title }}</h4>
+        <p>{{ card.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section why reveal" #revealCard>
+    <header>
+      <p class="eyebrow">Why ConnectSphere</p>
+      <h3>A refined social experience designed for trust, speed, and creativity</h3>
+    </header>
+    <div class="why-list">
+      <article class="why-row" *ngFor="let item of whyItems; let i = index" [class.reverse]="i % 2 === 1">
+        <div class="why-visual">
+          <div class="glass-panel">
+            <span>0{{ i + 1 }}</span>
+            <p>{{ item.title }}</p>
+          </div>
+        </div>
+        <div class="why-copy">
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.description }}</p>
+          <ul>
+            <li *ngFor="let point of item.points">{{ point }}</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section stats reveal" #revealCard>
+    <header>
+      <p class="eyebrow">Platform Stats</p>
+      <h3>Growing momentum across every community signal</h3>
+    </header>
+    <div class="stats-grid">
+      <article class="stat-card" *ngFor="let item of stats; let i = index">
+        <h4>{{ formatStat(i) }}{{ item.suffix }}</h4>
+        <p>{{ item.label }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section verification reveal" #revealCard>
+    <div class="verification-copy">
+      <p class="eyebrow">Creator Verification</p>
+      <h3>Trust, authenticity, and premium identity protection</h3>
+      <p>
+        ConnectSphere verification helps communities instantly recognize authentic creators while secure payment
+        infrastructure supports premium trust workflows.
+      </p>
+    </div>
+    <div class="verification-visual">
+      <article>
+        <span class="badge">Verified</span>
+        <h4>&#64;connectsphere.creator</h4>
+        <p>Identity confirmed. Trusted creator profile is active.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section updates reveal" #revealCard>
+    <header>
+      <p class="eyebrow">Latest Updates</p>
+      <h3>What is new across the platform</h3>
+    </header>
+    <div class="timeline">
+      <article class="timeline-item" *ngFor="let item of timelineItems">
+        <span class="node" aria-hidden="true"></span>
+        <div class="timeline-content">
+          <span class="date">{{ item.dateLabel }}</span>
+          <h4>{{ item.title }}</h4>
+          <p>{{ item.description }}</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cta reveal" #revealCard>
+    <h3>Join the next generation of social networking.</h3>
+    <div class="hero-actions">
+      <button type="button">Start Exploring</button>
+      <button type="button" class="ghost">Create Account</button>
+    </div>
+  </section>
+</div>

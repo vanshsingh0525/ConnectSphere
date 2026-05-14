@@ -1,0 +1,24 @@
+<div *ngIf="open" class="liked-by-backdrop" (click)="close()">
+  <section class="liked-by-shell" (click)="$event.stopPropagation()">
+    <header class="liked-by-header">
+      <div></div>
+      <h3>{{ title }}</h3>
+      <button type="button" class="liked-by-close" (click)="close()" aria-label="Close likes list">&times;</button>
+    </header>
+
+    <div class="liked-by-state" *ngIf="loading">Loading accounts...</div>
+    <div class="liked-by-state liked-by-state--error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+
+    <div class="liked-by-list" *ngIf="!loading && !errorMessage">
+      <button type="button" class="liked-by-row" *ngFor="let account of accounts" (click)="openAccount(account.username)">
+        <img [src]="account.profileImageUrl" [alt]="account.username + ' avatar'" appImageFallback />
+        <div class="liked-by-copy">
+          <strong>{{ account.username }}</strong>
+          <span>{{ account.name }}</span>
+        </div>
+      </button>
+
+      <p class="liked-by-empty" *ngIf="accounts.length === 0">{{ emptyMessage }}</p>
+    </div>
+  </section>
+</div>

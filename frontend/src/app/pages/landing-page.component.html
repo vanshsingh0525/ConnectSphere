@@ -1,0 +1,113 @@
+<main class="landing-shell">
+  <header class="top-bar">
+    <div class="brand">ConnectSphere</div>
+    <nav class="top-nav" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#communities">Communities</a>
+      <a href="#creators">Creators</a>
+      <button type="button" class="nav-login" (click)="goToLogin()">Log In</button>
+      <button type="button" class="nav-login" (click)="goToSignup()">Sign Up</button>
+    </nav>
+  </header>
+
+  <section class="hero section-visible" aria-label="Hero section">
+    <div class="hero-copy">
+      <p class="eyebrow">Social platform for the next era</p>
+      <h1>
+        Share Moments.<br />
+        Build Connections.<br />
+        Inspire Communities.
+      </h1>
+      <p class="hero-text">
+        ConnectSphere blends authentic storytelling, interest-driven circles, and creator-first tools into one
+        beautifully crafted social experience.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="btn-primary" (click)="goToPublicFeed()">Get Started</button>
+        <a class="btn-secondary" href="#features">Watch Demo</a>
+      </div>
+      <p class="social-proof">Join 2,000+ early creators already building their audience on ConnectSphere.</p>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="feed-card">
+        <div class="feed-header">
+          <span>Feed</span>
+          <span class="pill">AI Curated</span>
+        </div>
+        <div class="avatar-row">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="post-preview"></div>
+        <div class="stats-row">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div class="floating-card like">Sarah loved your post</div>
+      <div class="floating-card trend">Trending: #DesignInspo</div>
+    </div>
+  </section>
+
+  <section id="features" #revealSection class="content-section">
+    <div class="section-head">
+      <p class="eyebrow">Built for performance</p>
+      <h2>Tools that make social growth feel effortless</h2>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Smart Feed</h3>
+        <p>Personalized stream blending followed creators, topic momentum, and meaningful interactions.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Creator Studio</h3>
+        <p>Draft, schedule, and optimize posts with analytics that turn data into clear creative direction.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Circle Spaces</h3>
+        <p>Host private, public, or member-only communities around shared interests and real conversations.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Trust & Safety</h3>
+        <p>Flexible visibility controls, moderation workflows, and identity-aware protections by design.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="communities" #revealSection class="content-section spotlight">
+    <div>
+      <p class="eyebrow">Human-first networking</p>
+      <h2>Communities that feel alive, not noisy</h2>
+      <p>
+        From design circles to startup founders, ConnectSphere helps people find their crowd and sustain richer
+        discussions with modern social primitives.
+      </p>
+      <button type="button" class="btn-primary" (click)="goToPublicFeed()">Launch Your Profile</button>
+    </div>
+    <div class="spotlight-metrics" aria-label="Platform metrics">
+      <article>
+        <h3>96%</h3>
+        <p>weekly interaction retention</p>
+      </article>
+      <article>
+        <h3>4.8x</h3>
+        <p>average creator engagement lift</p>
+      </article>
+      <article>
+        <h3>24/7</h3>
+        <p>real-time discovery engine</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="creators" #revealSection class="content-section cta-band">
+    <h2>Start your ConnectSphere journey today</h2>
+    <p>Build your profile, share your first post, and connect with your people in under 2 minutes.</p>
+    <button type="button" class="btn-primary" (click)="goToPublicFeed()">Get Started</button>
+  </section>
+</main>

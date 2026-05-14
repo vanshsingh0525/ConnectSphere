@@ -1,0 +1,47 @@
+<div class="follow-shell">
+  <app-sidebar
+    class="sidebar-host"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="follow-main">
+    <header class="follow-header">
+      <div>
+        <h1>{{ pageTitle }}</h1>
+        <p>{{ pageSubtitle }}</p>
+      </div>
+    </header>
+
+    <p class="status loading" *ngIf="loading">Loading connections...</p>
+    <p class="status error" *ngIf="!loading && errorMessage">{{ errorMessage }}</p>
+
+    <section class="list-card" *ngIf="!loading && !errorMessage">
+      <article class="user-row" *ngFor="let item of items; trackBy: trackByUserId" (click)="openProfile(item.username)">
+        <div class="user-main">
+          <img [src]="item.profileImageUrl" [alt]="item.username + ' avatar'" appImageFallback />
+          <div class="user-copy">
+            <strong>{{ item.username }} <app-verified-badge [show]="!!item.verified"></app-verified-badge></strong>
+            <span>{{ item.name }}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="follow-btn"
+          [class.following]="item.isFollowing || item.isPending"
+          [disabled]="item.followBusy || item.isCurrentUser"
+          (click)="toggleFollow(item, $event)"
+        >
+          {{ item.isCurrentUser ? 'You' : (item.followBusy ? 'Please wait...' : (item.isFollowing ? 'Following' : (item.isPending ? 'Requested' : 'Follow'))) }}
+        </button>
+      </article>
+
+      <div class="empty-state" *ngIf="items.length === 0">
+        <h3>No users found</h3>
+        <p>This list is empty right now.</p>
+      </div>
+    </section>
+  </main>
+</div>

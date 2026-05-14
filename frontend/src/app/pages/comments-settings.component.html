@@ -1,0 +1,37 @@
+<div class="settings-shell">
+  <app-sidebar
+    class="sidebar-host"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    (itemSelected)="onSidebarSelection($event)"
+  ></app-sidebar>
+
+  <main class="settings-main">
+    <section class="panel">
+      <header class="panel-header">
+        <div>
+          <p class="eyebrow">Settings / Comments</p>
+          <h1>Comments</h1>
+          <p>Choose whether people can comment on your posts.</p>
+        </div>
+
+        <button type="button" class="ghost-btn" (click)="goBack()">Back</button>
+      </header>
+
+      <p class="status loading" *ngIf="loading">Loading comment settings...</p>
+      <p class="status error" *ngIf="!loading && errorMessage">{{ errorMessage }}</p>
+      <p class="status success" *ngIf="!loading && successMessage">{{ successMessage }}</p>
+
+      <div class="setting-card" *ngIf="!loading">
+        <div>
+          <strong>{{ commentsEnabled ? 'Comments enabled' : 'Comments disabled' }}</strong>
+          <p>Toggle this any time. Your preference is saved to your account and cached locally.</p>
+        </div>
+
+        <button type="button" class="toggle-btn" [disabled]="saving" (click)="toggleComments()">
+          {{ saving ? 'Saving...' : (commentsEnabled ? 'Disable comments' : 'Enable comments') }}
+        </button>
+      </div>
+    </section>
+  </main>
+</div>

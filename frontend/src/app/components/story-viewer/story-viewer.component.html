@@ -1,0 +1,146 @@
+<section class="story-viewer" *ngIf="isOpen && currentGroup && currentStory" aria-label="Story viewer">
+  <div class="viewer-backdrop" (click)="closeViewer()"></div>
+  <button type="button" class="viewer-close-floating" (click)="closeViewer()" aria-label="Close story viewer">&times;</button>
+  <button type="button" class="nav-arrow prev" (click)="previousStory()" aria-label="Previous story">‹</button>
+  <button type="button" class="nav-arrow next" (click)="nextStory()" aria-label="Next story">›</button>
+
+  <article class="viewer-card" (click)="$event.stopPropagation()">
+    <header class="viewer-head">
+      <div class="progress-track">
+        <div class="progress-segment" *ngFor="let item of currentStories; let index = index">
+          <div class="progress-fill" [style.width.%]="storyProgress(index)"></div>
+        </div>
+      </div>
+
+      <div class="viewer-meta">
+        <div class="author">
+          <img *ngIf="currentGroup.avatarUrl" [src]="currentGroup.avatarUrl" alt="Story author" appImageFallback />
+          <div class="initial" *ngIf="!currentGroup.avatarUrl">{{ currentGroup.name.charAt(0) }}</div>
+          <div>
+            <p class="username">{{ currentGroup.username || currentGroup.name }} <app-verified-badge [show]="!!currentGroup.verified"></app-verified-badge></p>
+            <p class="time">{{ relativeTimeLabel }}</p>
+          </div>
+        </div>
+
+        <div class="viewer-actions">
+          <button
+            type="button"
+            class="pause-btn"
+            (click)="togglePause()"
+            [attr.aria-label]="isPaused ? 'Resume story' : 'Pause story'"
+          >
+            {{ isPaused ? '▶' : '❚❚' }}
+          </button>
+          <div class="story-menu" *ngIf="canDeleteCurrentStory">
+            <button type="button" class="menu-btn" (click)="toggleActionsMenu()" aria-label="Story options">•••</button>
+            <div *ngIf="showActionsMenu" class="story-menu-popup">
+              <button
+                *ngIf="isHighlightViewerContext"
+                type="button"
+                class="menu-item"
+                (click)="editCurrentHighlight()"
+              >
+                Edit Highlight
+              </button>
+              <button
+                *ngIf="isHighlightViewerContext"
+                type="button"
+                class="menu-item danger"
+                (click)="deleteCurrentHighlight()"
+              >
+                Delete Highlight
+              </button>
+              <button
+                *ngIf="!isHighlightViewerContext"
+                type="button"
+                class="menu-item danger"
+                (click)="deleteCurrentStory()"
+                [disabled]="deleteBusy"
+              >
+                {{ deleteBusy ? 'Deleting...' : 'Delete' }}
+              </button>
+              <button type="button" class="menu-item" (click)="showActionsMenu = false">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="viewer-content">
+      <div class="media-wrap">
+        <button type="button" class="story-media-button" (click)="togglePause()" [attr.aria-label]="isPaused ? 'Resume story' : 'Pause story'">
+          <img *ngIf="currentStory.mediaType === 'IMAGE'" [src]="currentStory.mediaUrl" alt="Story media" />
+          <video
+            *ngIf="currentStory.mediaType === 'VIDEO'"
+            #storyVideo
+            [src]="currentStory.mediaUrl"
+            autoplay
+            muted
+            playsinline
+          ></video>
+        </button>
+
+        <p class="caption" *ngIf="currentStory.caption">{{ currentStory.caption }}</p>
+
+        <div class="story-bottom-bar">
+          <div class="reply-shell" [class.focused]="replyFocused" *ngIf="canReplyToCurrentStory">
+            <input
+              type="text"
+              class="reply-input"
+              [placeholder]="replyPlaceholder"
+              [(ngModel)]="replyText"
+              (focus)="onReplyFocus()"
+              (blur)="onReplyBlur()"
+              (keydown.enter)="sendReply()"
+            />
+            <button
+              *ngIf="canSendReply"
+              type="button"
+              class="reply-send-btn"
+              (mousedown)="$event.preventDefault()"
+              (click)="sendReply()"
+            >
+              Send
+            </button>
+          </div>
+          <div class="story-bottom-actions">
+            <button
+              *ngIf="canDeleteCurrentStory"
+              type="button"
+              class="story-views"
+              (click)="openViewsModal()"
+              aria-label="Open story viewers"
+            >
+              <span class="story-views-icon" aria-hidden="true">👁</span>
+              <span class="story-views-count">{{ currentStoryViewCount }}</span>
+            </button>
+            <button
+              type="button"
+              class="reaction-heart-btn"
+              [class.active]="reactedToCurrentStory"
+              [disabled]="reactionBusy"
+              (click)="toggleReaction()"
+              aria-label="Like story"
+            >
+              {{ reactedToCurrentStory ? '♥' : '♡' }}
+            </button>
+          </div>
+        </div>
+
+        <p class="reaction-error" *ngIf="reactionErrorMessage">{{ reactionErrorMessage }}</p>
+        <p class="reaction-error" *ngIf="deleteErrorMessage">{{ deleteErrorMessage }}</p>
+      </div>
+    </main>
+  </article>
+</section>
+
+<app-liked-by-modal
+  [open]="viewsModalOpen"
+  [accounts]="viewedByAccounts"
+  [loading]="viewsModalLoading"
+  [errorMessage]="viewsModalError"
+  [emptyMessage]="'No views yet.'"
+  title="Story views"
+  (closed)="closeViewsModal()"
+  (accountSelected)="openViewedUser($event)"
+></app-liked-by-modal>

@@ -1,0 +1,12 @@
+<nav class="tabs-shell" aria-label="Profile content tabs">
+  <button
+    type="button"
+    *ngFor="let tab of visibleTabs"
+    class="tab-btn"
+    [class.active]="activeTab === tab.key"
+    (click)="setTab(tab.key)"
+  >
+    <span class="icon">{{ tab.icon }}</span>
+    <span>{{ tab.label }}</span>
+  </button>
+</nav>

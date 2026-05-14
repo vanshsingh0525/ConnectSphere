@@ -1,0 +1,33 @@
+.verified-badge {
+  width: 17px;
+  height: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-left: 0.28rem;
+  border-radius: 999px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.verified-badge svg {
+  width: 100%;
+  height: 100%;
+}
+
+.verified-badge circle {
+  fill: #0095f6;
+}
+
+.verified-badge path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verified-badge:hover {
+  box-shadow: 0 0 12px rgba(0, 149, 246, 0.52);
+  transform: translateY(-0.5px);
+}

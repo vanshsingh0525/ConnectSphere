@@ -1,0 +1,62 @@
+.more-menu {
+  position: fixed;
+  min-width: 180px;
+  max-width: min(280px, calc(100vw - 2rem));
+  padding: 0.45rem;
+  border: 1px solid #dfe8fb;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 40px rgba(19, 36, 91, 0.16);
+  backdrop-filter: blur(12px);
+  display: grid;
+  gap: 0.35rem;
+  z-index: 10000;
+}
+
+.more-menu button {
+  border: 0;
+  min-height: 42px;
+  border-radius: 12px;
+  background: transparent;
+  color: #274170;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.more-menu button:hover {
+  background: #eef4ff;
+  transform: translateX(2px);
+}
+
+.admin-entry {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(124, 58, 237, 0.18)) !important;
+  border: 1px solid rgba(147, 197, 253, 0.45) !important;
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.22);
+}
+
+.divider {
+  height: 1px;
+  margin: 0.15rem 0;
+  background: linear-gradient(90deg, transparent, #d7e4ff, transparent);
+}
+
+@media (max-width: 640px) {
+  .more-menu {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    top: auto !important;
+    max-width: none;
+    min-width: 0;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(19, 36, 91, 0.24);
+  }
+
+  .more-menu button {
+    min-height: 48px;
+  }
+}

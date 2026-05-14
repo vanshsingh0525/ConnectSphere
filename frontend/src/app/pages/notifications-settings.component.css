@@ -1,0 +1,217 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.settings-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 184, 76, 0.18), transparent 34%),
+    radial-gradient(circle at right center, rgba(77, 121, 255, 0.14), transparent 32%),
+    #f5f8ff;
+}
+
+.sidebar-host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 20;
+}
+
+.settings-main {
+  margin-left: 90px;
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.panel {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  border-radius: 28px;
+  border: 1px solid #e3eafb;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 24px 60px rgba(24, 39, 84, 0.12);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: #dd6b2d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.panel-header h1 {
+  margin: 0;
+  color: #1d315f;
+}
+
+.panel-header p:last-child {
+  margin: 0.45rem 0 0;
+  color: #6078a8;
+}
+
+.ghost-btn {
+  border: 1px solid #dce7fe;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 1rem;
+  background: #f5f8ff;
+  color: #365fcf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.status {
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  font-weight: 600;
+}
+
+.loading {
+  background: #edf3ff;
+  color: #36508f;
+}
+
+.error {
+  background: #ffe8ec;
+  color: #8f1e2d;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 0.9rem;
+  padding: 0.9rem;
+  border: 1px solid #e6ecfb;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.notification-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(27, 47, 93, 0.08);
+}
+
+.notification-item.unread {
+  border-color: #c8d9ff;
+  box-shadow: inset 3px 0 0 #3d72f6;
+}
+
+.notification-item img {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d7e4ff;
+}
+
+.notification-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #7186b0;
+  font-size: 0.85rem;
+}
+
+.pill {
+  display: inline-grid;
+  place-items: center;
+  min-height: 24px;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #365fcf;
+  font-weight: 700;
+}
+
+.notification-copy h3 {
+  margin: 0.35rem 0 0.2rem;
+  color: #22375f;
+}
+
+.notification-copy p,
+.notification-copy small {
+  margin: 0;
+  color: #5f76a3;
+}
+
+.notification-copy small {
+  display: inline-block;
+  margin-top: 0.4rem;
+}
+
+.request-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.request-actions button {
+  border: 0;
+  border-radius: 999px;
+  min-height: 38px;
+  padding: 0 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.accept-btn {
+  background: #244172;
+  color: #fff;
+}
+
+.delete-btn {
+  background: #ffecef;
+  color: #8e3345;
+}
+
+.request-actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6078a8;
+}
+
+@media (max-width: 900px) {
+  .sidebar-host {
+    position: static;
+    height: auto;
+  }
+
+  .settings-main {
+    margin-left: 0;
+  }
+
+  .panel-header {
+    flex-direction: column;
+  }
+
+  .notification-item {
+    grid-template-columns: 1fr;
+  }
+}

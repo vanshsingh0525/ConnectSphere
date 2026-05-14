@@ -1,0 +1,16 @@
+<section class="highlights-shell" aria-label="Story highlights">
+  <div class="highlights-track">
+    <article
+      *ngFor="let item of items"
+      class="highlight-item"
+      [class.add-highlight]="item.isNew"
+      (click)="onHighlightClick(item)"
+    >
+      <div class="thumb" [class.new-item]="item.isNew">
+        <img *ngIf="!item.isNew" [src]="item.imageUrl" [alt]="item.label + ' highlight'" />
+        <span *ngIf="item.isNew" class="plus add-story-btn">+</span>
+      </div>
+      <p>{{ item.label }}</p>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,113 @@
+<article class="post-card">
+  <header class="post-head">
+    <div class="user-meta">
+      <button type="button" class="avatar" [style.--avatarColor]="post.userAvatarColor" (click)="openProfile()">
+        <img *ngIf="post.userAvatarUrl" [src]="post.userAvatarUrl" [alt]="post.userName + ' avatar'" appImageFallback />
+        <span *ngIf="!post.userAvatarUrl">{{ post.userName.charAt(0) }}</span>
+      </button>
+      <div>
+        <h3>
+          <button type="button" (click)="openProfile()">{{ post.userName }}</button>
+          <app-verified-badge [show]="!!post.userVerified"></app-verified-badge>
+        </h3>
+        <p><button type="button" (click)="openProfile()">{{ post.userHandle }}</button> <span class="dot">.</span> {{ post.timeAgo }}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-menu-shell">
+    <button type="button" class="post-menu-btn" aria-label="More options" (click)="togglePostMenu($event)">...</button>
+    <div class="post-menu-popover" *ngIf="postMenuOpen">
+      <button type="button" *ngIf="canEditPost()" (click)="requestEditPost($event)">Edit post</button>
+      <button type="button" (click)="closePostMenu()">Close</button>
+    </div>
+  </div>
+
+  <p class="post-content">
+    <ng-container *ngFor="let token of contentTokens()">
+      <span *ngIf="token.type === 'text'">{{ token.value }}</span>
+      <button
+        *ngIf="token.type === 'hashtag'"
+        type="button"
+        class="entity-link hashtag-link"
+        (click)="openHashtag(token.value, $event)"
+      >
+        #{{ token.value }}
+      </button>
+      <button
+        *ngIf="token.type === 'mention'"
+        type="button"
+        class="entity-link mention-link"
+        (click)="openProfile(token.value)"
+      >
+        <span aria-hidden="true">&#64;</span>{{ token.value }}
+      </button>
+    </ng-container>
+  </p>
+
+  <div *ngIf="post.mediaType !== 'none'" class="media-shell clickable-media" [class.video]="post.mediaType === 'video'" (click)="openPost()">
+    <img *ngIf="post.mediaType === 'image'" [src]="post.mediaUrl" [alt]="post.userName + ' post media'" />
+    <video *ngIf="post.mediaType === 'video'" controls muted preload="metadata">
+      <source [src]="post.mediaUrl" type="video/mp4" />
+      Your browser does not support video playback.
+    </video>
+  </div>
+
+  <div class="hashtags">
+    <button type="button" *ngFor="let tag of post.hashtags" class="tag-btn" (click)="openHashtag(tag, $event)">#{{ tag }}</button>
+  </div>
+
+  <footer class="post-foot">
+    <div class="actions">
+      <button
+        type="button"
+        class="action-btn"
+        [class.liked]="post.isLiked"
+        [disabled]="likeInFlight"
+        (click)="toggleLike()"
+        aria-label="Like"
+      >
+        <svg class="engagement-icon engagement-icon--heart" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12.001 20.727c-.32 0-.639-.108-.9-.323C7.225 17.221 4 14.39 4 10.603 4 8.143 5.886 6.25 8.292 6.25c1.45 0 2.81.705 3.709 1.88.899-1.175 2.26-1.88 3.709-1.88C18.114 6.25 20 8.143 20 10.603c0 3.787-3.225 6.618-7.101 9.801-.261.215-.58.323-.898.323Z"
+            [attr.fill]="post.isLiked ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            stroke-width="1.85"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button type="button" class="engagement-link" (click)="openLikesModal($event)">
+        {{ post.likes }} {{ post.likes === 1 ? 'like' : 'likes' }}
+      </button>
+      <button type="button" class="action-btn" (click)="incrementComment()" aria-label="Comment">
+        <svg class="engagement-icon engagement-icon--comment" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M12 4.75c-4.556 0-8.25 3.308-8.25 7.387 0 2.235 1.113 4.238 2.873 5.593l-.736 3.346a.45.45 0 0 0 .653.486l3.359-1.82c.668.17 1.373.258 2.101.258 4.556 0 8.25-3.308 8.25-7.387S16.556 4.75 12 4.75Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.85"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>{{ post.comments }}</span>
+      </button>
+      <button type="button" class="action-btn" (click)="incrementShare()" aria-label="Share">
+        <span>&#10148;</span>
+        <span>{{ post.shares }}</span>
+      </button>
+    </div>
+  </footer>
+</article>
+
+<app-liked-by-modal
+  [open]="likesModalOpen"
+  [accounts]="likedByAccounts"
+  [loading]="likesModalLoading"
+  [errorMessage]="likesModalError"
+  title="Likes"
+  (closed)="closeLikesModal()"
+  (accountSelected)="openLikedUser($event)"
+></app-liked-by-modal>

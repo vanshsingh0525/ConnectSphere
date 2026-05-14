@@ -1,0 +1,237 @@
+<div class="profile-shell">
+  <input
+    type="file"
+    #fileInput
+    accept="image/*,video/*"
+    hidden
+    (change)="onFileSelected($event)"
+  />
+  <input
+    type="file"
+    #coverFileInput
+    accept="image/jpeg,image/jpg,image/png,image/webp"
+    hidden
+    (change)="onCoverFileSelected($event)"
+  />
+
+  <app-sidebar
+    class="sidebar-host"
+    [notificationCount]="notificationCount"
+    [activeItem]="activeSidebarItem"
+    createBehavior="wizard"
+    (itemSelected)="onSidebarSelection($event)"
+    (fileSelected)="onCreateFileSelected($event)"
+    (createRequested)="onCreatePostRequested()"
+  ></app-sidebar>
+
+  <main class="profile-main">
+    <p class="status loading" *ngIf="loadingProfile">Loading profile...</p>
+    <p class="status loading" *ngIf="!loadingProfile && loadingContent">Loading posts and stories...</p>
+    <p class="status error" *ngIf="profileErrorMessage">{{ profileErrorMessage }}</p>
+
+    <section class="create-preview-card" *ngIf="selectedCreateFilePreviewUrl">
+      <div class="create-preview-head">
+        <h3>Selected story media</h3>
+        <button type="button" (click)="clearCreatePreview()">Clear</button>
+      </div>
+
+      <p class="create-file-name">{{ selectedCreateFileName }}</p>
+
+      <img
+        *ngIf="!selectedCreateFileIsVideo"
+        [src]="selectedCreateFilePreviewUrl"
+        alt="Selected media preview"
+      />
+
+      <video *ngIf="selectedCreateFileIsVideo" [src]="selectedCreateFilePreviewUrl" controls muted></video>
+
+      <p class="status loading" *ngIf="storyUploadInProgress">Uploading story...</p>
+      <p class="status error" *ngIf="storyUploadErrorMessage">{{ storyUploadErrorMessage }}</p>
+      <p class="status success" *ngIf="storyUploadSuccessMessage">{{ storyUploadSuccessMessage }}</p>
+    </section>
+
+    <section class="profile-loading-card" *ngIf="loadingProfile || (profileLoadAttempted && !profileLoaded && !profileErrorMessage)">
+      <div class="profile-skeleton-header shimmer"></div>
+      <div class="profile-skeleton-lines">
+        <span class="shimmer"></span>
+        <span class="shimmer"></span>
+        <span class="shimmer"></span>
+      </div>
+    </section>
+
+    <app-profile-header
+      [profile]="profile"
+      [isOwnProfile]="isOwnProfile"
+      [isFollowing]="isFollowing"
+      [isPending]="isPending"
+      [followBusy]="followBusy"
+      [hasActiveStory]="profileStoryGroups.length > 0"
+      (editProfile)="onEditProfile()"
+      (toggleFollow)="onToggleFollow()"
+      (addStory)="openFilePicker()"
+      (viewStory)="onViewProfileStory()"
+      (openPosts)="scrollToPostsSection()"
+      (openFollowers)="openFollowers()"
+      (openFollowing)="openFollowing()"
+    ></app-profile-header>
+
+    <section class="private-state-card" *ngIf="contentAccessRestricted && !isOwnProfile">
+      <h3>{{ isPending ? 'Follow request pending' : 'This account is private' }}</h3>
+      <p>{{ contentAccessMessage }}</p>
+    </section>
+
+    <app-highlights
+      *ngIf="profileLoaded && (!contentAccessRestricted || isOwnProfile)"
+      [items]="highlights"
+      [isOwnProfile]="isOwnProfile"
+      (addRequested)="openNewHighlightModal()"
+      (highlightSelected)="onHighlightSelected($event)"
+      (editRequested)="openEditHighlightModal($event)"
+      (deleteRequested)="onDeleteHighlight($event)"
+    ></app-highlights>
+
+    <app-profile-tabs
+      *ngIf="profileLoaded && (!contentAccessRestricted || isOwnProfile)"
+      [activeTab]="activeTab"
+      [showSavedTab]="isOwnProfile"
+      (tabChange)="onTabChange($event)"
+    ></app-profile-tabs>
+
+    <section #postsSection *ngIf="profileLoaded && (!contentAccessRestricted || isOwnProfile)">
+      <app-post-grid
+        [posts]="visiblePosts"
+        [showEmptyState]="true"
+        [emptyStateIcon]="profileGridEmptyStateIcon"
+        [emptyStateTitle]="profileGridEmptyStateTitle"
+        [emptyStateDescription]="profileGridEmptyStateDescription"
+        [showEmptyAction]="profileGridShowEmptyAction"
+      ></app-post-grid>
+    </section>
+  </main>
+
+  <app-story-viewer
+    [isOpen]="profileStoryViewerOpen"
+    [storyGroups]="activeViewerGroups"
+    [startUserId]="activeViewerStartUserId"
+    (closed)="onCloseProfileStoryViewer()"
+    (viewed)="onStoryViewed($event)"
+    (deleted)="onStoryDeleted($event)"
+    (highlightEditRequested)="onViewerHighlightEditRequested($event)"
+    (highlightDeleteRequested)="onViewerHighlightDeleteRequested($event)"
+  ></app-story-viewer>
+
+  <section class="highlight-modal-shell" *ngIf="highlightModalOpen">
+    <div class="highlight-modal-backdrop" (click)="closeNewHighlightModal()"></div>
+    <article class="highlight-modal-card">
+      <header class="highlight-modal-head">
+        <button type="button" class="highlight-close-btn" (click)="closeNewHighlightModal()" aria-label="Close new highlight">&times;</button>
+        <h3>New Highlight</h3>
+      </header>
+
+      <div class="highlight-modal-body" *ngIf="highlightModalStep === 'name'">
+        <input
+          type="text"
+          class="highlight-name-input"
+          placeholder="Highlight Name"
+          [(ngModel)]="highlightName"
+          (keydown.enter)="proceedToHighlightStories()"
+        />
+        <p class="status error" *ngIf="highlightErrorMessage">{{ highlightErrorMessage }}</p>
+      </div>
+
+      <div class="highlight-modal-body highlight-story-grid-shell" *ngIf="highlightModalStep === 'stories'">
+        <div class="highlight-story-grid">
+          <button
+            type="button"
+            class="highlight-story-card"
+            *ngFor="let story of availableHighlightStories"
+            [class.selected]="isHighlightStorySelected(story.storyId)"
+            (click)="toggleHighlightStorySelection(story.storyId)"
+          >
+            <img *ngIf="story.mediaType === 'IMAGE'" [src]="story.mediaUrl" alt="Story thumbnail" />
+            <video *ngIf="story.mediaType === 'VIDEO'" [src]="story.mediaUrl" muted></video>
+            <span class="highlight-story-check" *ngIf="isHighlightStorySelected(story.storyId)">✓</span>
+          </button>
+        </div>
+        <p class="status error" *ngIf="highlightErrorMessage">{{ highlightErrorMessage }}</p>
+      </div>
+
+      <footer class="highlight-modal-foot">
+        <button
+          type="button"
+          class="highlight-next-btn"
+          *ngIf="highlightModalStep === 'name'"
+          (click)="proceedToHighlightStories()"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          class="highlight-next-btn"
+          *ngIf="highlightModalStep === 'stories'"
+          [disabled]="creatingHighlight"
+          (click)="createHighlight()"
+        >
+          {{ creatingHighlight ? 'Creating...' : 'Create' }}
+        </button>
+      </footer>
+    </article>
+  </section>
+
+  <section class="highlight-modal-shell" *ngIf="editHighlightModalOpen">
+    <div class="highlight-modal-backdrop" (click)="closeEditHighlightModal()"></div>
+    <article class="edit-highlight-card">
+      <header class="highlight-modal-head">
+        <button type="button" class="highlight-close-btn" (click)="closeEditHighlightModal()" aria-label="Close edit highlight">&times;</button>
+        <h3>Edit Highlight</h3>
+      </header>
+
+      <div class="edit-highlight-body">
+        <div class="edit-highlight-left">
+          <div class="edit-cover-preview">
+            <img
+              *ngIf="selectedCoverPreviewUrl; else currentCover"
+              [src]="selectedCoverPreviewUrl"
+              alt="Custom cover preview"
+            />
+            <ng-template #currentCover>
+              <img [src]="editHighlightTarget?.imageUrl || ''" alt="Current highlight cover" />
+            </ng-template>
+          </div>
+          <button type="button" class="edit-cover-btn" (click)="openCoverFilePicker(coverFileInput)">Change Cover</button>
+        </div>
+
+        <div class="edit-highlight-right">
+          <input
+            type="text"
+            class="highlight-name-input"
+            placeholder="Highlight title"
+            [(ngModel)]="editHighlightTitle"
+          />
+          <div class="highlight-story-grid edit-grid">
+            <button
+              type="button"
+              class="highlight-story-card"
+              *ngFor="let story of editHighlightStories"
+              [class.selected]="isEditHighlightStorySelected(story.storyId)"
+              (click)="toggleEditHighlightStory(story.storyId)"
+            >
+              <img *ngIf="story.mediaType === 'IMAGE'" [src]="story.mediaUrl" alt="Story thumbnail" />
+              <video *ngIf="story.mediaType === 'VIDEO'" [src]="story.mediaUrl" muted></video>
+              <span class="highlight-story-check" *ngIf="isEditHighlightStorySelected(story.storyId)">✓</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p class="status error edit-error" *ngIf="editHighlightErrorMessage">{{ editHighlightErrorMessage }}</p>
+
+      <footer class="edit-highlight-foot">
+        <button type="button" class="edit-cancel-btn" (click)="closeEditHighlightModal()">Cancel</button>
+        <button type="button" class="highlight-next-btn" [disabled]="editHighlightSaving" (click)="saveEditedHighlight()">
+          {{ editHighlightSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </footer>
+    </article>
+  </section>
+</div>
