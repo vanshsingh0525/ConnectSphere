@@ -1,0 +1,127 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        ttl: 5s
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - http://localhost:4200
+              - http://127.0.0.1:4200
+              - http://localhost:5173
+              - http://127.0.0.1:5173
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: ${app.auth-service-uri:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: auth-service-user-profile
+          uri: ${app.auth-service-uri:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+        - id: auth-service-profile-images
+          uri: ${app.auth-service-uri:http://localhost:8081}
+          predicates:
+            - Path=/profile-images/**
+        - id: post-service
+          uri: ${app.post-service-uri:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/posts/**
+        - id: post-service-public-feed
+          uri: ${app.post-service-uri:http://localhost:8082}
+          predicates:
+            - Path=/api/posts/**
+        - id: post-service-media-upload
+          uri: ${app.post-service-uri:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/media/**
+        - id: post-service-uploads
+          uri: ${app.post-service-uri:http://localhost:8082}
+          predicates:
+            - Path=/uploads/**
+        - id: follow-service
+          uri: ${app.follow-service-uri:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/follows/**,/api/follows/**
+        - id: like-service
+          uri: lb://LIKE-SERVICE
+          predicates:
+            - Path=/api/v1/likes/**,/api/v1/reactions/**,/api/reactions/**
+        - id: comment-service
+          uri: lb://COMMENT-SERVICE
+          predicates:
+            - Path=/api/comments/**,/api/v1/comments/**
+        - id: notification-service
+          uri: ${app.notification-service-uri:http://localhost:8089}
+          predicates:
+            - Path=/api/v1/notifications/**
+        - id: search-service
+          uri: lb://SEARCH-SERVICE
+          predicates:
+            - Path=/api/search/**
+        - id: admin-service
+          uri: lb://ADMIN-SERVICE
+          predicates:
+            - Path=/admin/**
+        - id: story-service
+          uri: ${app.story-service-uri:http://localhost:8086}
+          predicates:
+            - Path=/api/stories/**
+        - id: story-service-uploads
+          uri: ${app.story-service-uri:http://localhost:8086}
+          predicates:
+            - Path=/story-uploads/**
+        - id: payment-service
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payments/**
+        - id: auth-service-oauth-authorization
+          uri: ${app.auth-service-uri:http://localhost:8081}
+          predicates:
+            - Path=/oauth2/**
+        - id: auth-service-oauth-login
+          uri: ${app.auth-service-uri:http://localhost:8081}
+          predicates:
+            - Path=/login/**
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: vanshsupersecurejwtsecretkey123456
+
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  base-dir: ${LOG_BASE_DIR:../logs}
+
